@@ -40,8 +40,8 @@ function Index() {
       <main className="flex flex-col gap-8 px-5 pb-16 pt-6">
         {/* Hero */}
         <section className="text-center">
-          <BosniaFlag className="text-3xl" />
-          <h1 className="mt-2 font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
+          <BosniaFlag className="mx-auto h-7 w-12 rounded-[3px] shadow-[0_3px_10px_oklch(0_0_0_/_45%)] ring-1 ring-foreground/15" />
+          <h1 className="mt-4 font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
             PULS<br />
             <span className="text-primary">ZMAJEVA</span>
           </h1>
@@ -69,21 +69,73 @@ function Index() {
           </Link>
         </section>
 
-        {/* Sample card */}
-        <section className="mx-auto w-full max-w-[260px]">
-          <PulsCard
-            data={{
-              name: "AMIR",
-              cityDisplay: "Malmö",
-              countryFlag: "🇸🇪",
-              countryName: "Švedska",
-              opponentName: "Švicarska",
-              bihScore: 2,
-              opponentScore: 1,
-              pulsValue: 88,
-              pulsLabel: "Već slavimo",
-            }}
-          />
+        {/* Sample card showpiece with handwritten annotations */}
+        <section className="relative mx-auto w-full max-w-[300px] pt-6">
+          {/* left annotation */}
+          <div className="pointer-events-none absolute -left-1 top-10 z-20 -rotate-6 text-left">
+            <p className="font-hand text-2xl font-bold leading-[0.95] text-ice drop-shadow">
+              Tvoj puls
+              <br />
+              tvoja priča
+            </p>
+            <svg viewBox="0 0 60 30" className="mt-1 h-5 w-14 text-ice/80">
+              <path
+                d="M2 4 C 20 2, 40 14, 56 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M56 24 L 47 22 M56 24 L 52 15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          {/* right annotation */}
+          <div className="pointer-events-none absolute -right-1 top-1/2 z-20 rotate-6 text-right">
+            <p className="font-hand text-2xl font-bold leading-[0.95] text-primary drop-shadow">
+              Podijeli i
+              <br />
+              podrži Zmajeve!
+            </p>
+            <svg viewBox="0 0 60 30" className="ml-auto mt-1 h-5 w-14 text-primary/80">
+              <path
+                d="M58 4 C 40 2, 20 14, 4 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M4 24 L 13 22 M4 24 L 8 15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          <div className="mx-auto w-full max-w-[220px] drop-shadow-[0_18px_40px_oklch(0_0_0_/_55%)]">
+            <PulsCard
+              data={{
+                name: "AMIR",
+                cityDisplay: "Malmö",
+                countryFlag: "🇸🇪",
+                countryName: "Švedska",
+                opponentName: "Švicarska",
+                bihScore: 2,
+                opponentScore: 1,
+                pulsValue: 88,
+                pulsLabel: "Već slavimo",
+              }}
+            />
+          </div>
         </section>
 
         {/* Matches */}
