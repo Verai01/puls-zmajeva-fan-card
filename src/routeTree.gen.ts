@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MatchIdRouteImport } from './routes/match.$id'
 import { Route as CreateMatchIdRouteImport } from './routes/create.$matchId'
 import { Route as CardSubmissionIdRouteImport } from './routes/card.$submissionId'
 
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const CardSubmissionIdRoute = CardSubmissionIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
@@ -50,18 +58,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/card/$submissionId' | '/create/$matchId' | '/match/$id'
+  fullPaths:
+    | '/'
+    | '/leaderboard'
+    | '/card/$submissionId'
+    | '/create/$matchId'
+    | '/match/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/card/$submissionId' | '/create/$matchId' | '/match/$id'
+  to:
+    | '/'
+    | '/leaderboard'
+    | '/card/$submissionId'
+    | '/create/$matchId'
+    | '/match/$id'
   id:
     | '__root__'
     | '/'
+    | '/leaderboard'
     | '/card/$submissionId'
     | '/create/$matchId'
     | '/match/$id'
@@ -69,6 +89,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   CardSubmissionIdRoute: typeof CardSubmissionIdRoute
   CreateMatchIdRoute: typeof CreateMatchIdRoute
   MatchIdRoute: typeof MatchIdRoute
@@ -76,6 +97,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -109,6 +137,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeaderboardRoute: LeaderboardRoute,
   CardSubmissionIdRoute: CardSubmissionIdRoute,
   CreateMatchIdRoute: CreateMatchIdRoute,
   MatchIdRoute: MatchIdRoute,
