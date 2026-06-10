@@ -7,13 +7,14 @@ export function averagePuls(subs: Submission[]): number {
   return Math.round(sum / subs.length);
 }
 
-export interface GroupAvg {
-  key: string;
+export interface CountryStat {
+  name: string;
   count: number;
   avg: number;
 }
 
-export function pulsByCountry(subs: Submission[]): GroupAvg[] {
+/** Countries ranked by AVERAGE puls (highest/closest to 100 first). */
+export function pulsByCountry(subs: Submission[], limit = 5): CountryStat[] {
   const map = new Map<string, { sum: number; count: number }>();
   for (const s of subs) {
     const cur = map.get(s.country) ?? { sum: 0, count: 0 };
@@ -22,22 +23,33 @@ export function pulsByCountry(subs: Submission[]): GroupAvg[] {
     map.set(s.country, cur);
   }
   return [...map.entries()]
-    .map(([key, v]) => ({ key, count: v.count, avg: Math.round(v.sum / v.count) }))
-    .sort((a, b) => b.count - a.count);
+    .map(([name, v]) => ({ name, count: v.count, avg: Math.round(v.sum / v.count) }))
+    .sort((a, b) => b.avg - a.avg || b.count - a.count)
+    .slice(0, limit);
 }
 
-export function topCities(subs: Submission[], limit = 5): GroupAvg[] {
-  const map = new Map<string, { display: string; sum: number; count: number }>();
+export interface CityStat {
+  city: string;
+  country: string;
+  count: number;
+}
+
+/** Cities ranked purely by NUMBER of submissions. */
+export function topCities(subs: Submission[], limit = 10): CityStat[] {
+  const map = new Map<
+    string,
+    { display: string; country: string; count: number }
+  >();
   for (const s of subs) {
     const cur =
-      map.get(s.city_normalized) ?? { display: s.city_display, sum: 0, count: 0 };
-    cur.sum += s.puls_value;
+      map.get(s.city_normalized) ??
+      { display: s.city_display, country: s.country, count: 0 };
     cur.count += 1;
     map.set(s.city_normalized, cur);
   }
   return [...map.values()]
-    .map((v) => ({ key: v.display, count: v.count, avg: Math.round(v.sum / v.count) }))
-    .sort((a, b) => b.count - a.count || b.avg - a.avg)
+    .map((v) => ({ city: v.display, country: v.country, count: v.count }))
+    .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city))
     .slice(0, limit);
 }
 
