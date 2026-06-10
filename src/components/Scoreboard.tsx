@@ -1,7 +1,10 @@
+import type { ReactNode } from "react";
 import { Minus, Plus } from "lucide-react";
+import { CircularBosniaFlag, CircularFlag } from "@/components/CircularFlag";
 
 interface ScoreboardProps {
   opponentName: string;
+  opponentCode?: string | null;
   bihScore: number;
   opponentScore: number;
   onChange: (side: "bih" | "opponent", value: number) => void;
@@ -9,19 +12,19 @@ interface ScoreboardProps {
 
 function Stepper({
   label,
-  flag,
+  flagNode,
   value,
   onChange,
 }: {
   label: string;
-  flag: string;
+  flagNode: ReactNode;
   value: number;
   onChange: (value: number) => void;
 }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-3">
       <div className="flex items-center gap-1.5 text-sm font-extrabold uppercase tracking-wide text-foreground">
-        <span className="text-lg leading-none">{flag}</span>
+        {flagNode}
         <span className="max-w-[80px] truncate">{label}</span>
       </div>
       <div
@@ -54,6 +57,7 @@ function Stepper({
 
 export function Scoreboard({
   opponentName,
+  opponentCode,
   bihScore,
   opponentScore,
   onChange,
@@ -62,14 +66,16 @@ export function Scoreboard({
     <div className="glass-card flex items-start gap-2 rounded-2xl px-4 py-6">
       <Stepper
         label="BiH"
-        flag="🇧🇦"
+        flagNode={<CircularBosniaFlag size="sm" />}
         value={bihScore}
         onChange={(v) => onChange("bih", v)}
       />
       <div className="self-center pt-2 font-display text-4xl text-foreground/60">:</div>
       <Stepper
         label={opponentName}
-        flag="⚽"
+        flagNode={
+          <CircularFlag code={opponentCode} size="sm" alt={opponentName} emoji="⚽" />
+        }
         value={opponentScore}
         onChange={(v) => onChange("opponent", v)}
       />

@@ -1,6 +1,4 @@
-ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS local_time_label TEXT;
-
-DELETE FROM public.submissions;
+-- Correct opponent names, Sarajevo kickoff times, and replace Germany with Qatar.
 
 UPDATE public.matches SET
   opponent_name = 'Kanada',
@@ -9,7 +7,7 @@ UPDATE public.matches SET
   bih_final_score = NULL,
   opponent_final_score = NULL,
   local_time_label = '12.06.2026 15:00 UTC-4'
-WHERE id = '2e44dfa0-6cda-4f8c-904f-8d84334c56ad';
+WHERE opponent_name IN ('Kanada', 'Protivnik 1');
 
 UPDATE public.matches SET
   opponent_name = 'Švicarska',
@@ -18,7 +16,7 @@ UPDATE public.matches SET
   bih_final_score = NULL,
   opponent_final_score = NULL,
   local_time_label = '18.06.2026 15:00 UTC-4'
-WHERE id = '02049d09-223d-4a00-a406-7a8ed183d935';
+WHERE opponent_name IN ('Švicarska', 'Protivnik 2');
 
 UPDATE public.matches SET
   opponent_name = 'Katar',
@@ -27,4 +25,4 @@ UPDATE public.matches SET
   bih_final_score = NULL,
   opponent_final_score = NULL,
   local_time_label = '24.06.2026 15:00 UTC-4'
-WHERE id = 'd5547e01-93db-464f-b187-29a8067fea42';
+WHERE opponent_name IN ('Katar', 'Njemačka', 'Protivnik 3');

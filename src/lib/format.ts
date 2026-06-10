@@ -35,3 +35,11 @@ export function statusLabel(status: EffectiveStatus): string {
 
 export const VOTING_CLOSED_MESSAGE =
   "Glasanje je zatvoreno. Rezultati su i dalje dostupni.";
+
+/** Secondary line under Sarajevo kickoff when `local_time_label` is set. */
+export function formatLocalTimeLine(
+  localLabel: string | null | undefined,
+): string | null {
+  if (!localLabel?.trim()) return null;
+  return `Local time: ${localLabel.trim()}`;
+}

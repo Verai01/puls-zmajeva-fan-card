@@ -23,6 +23,7 @@ export const COUNTRIES: Country[] = [
   { code: "TR", name: "Turska", flag: "🇹🇷" },
   { code: "US", name: "SAD", flag: "🇺🇸" },
   { code: "CA", name: "Kanada", flag: "🇨🇦" },
+  { code: "QA", name: "Katar", flag: "🇶🇦" },
   { code: "AU", name: "Australija", flag: "🇦🇺" },
   { code: "GB", name: "Ujedinjeno Kraljevstvo", flag: "🇬🇧" },
   { code: "IT", name: "Italija", flag: "🇮🇹" },

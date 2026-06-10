@@ -7,6 +7,7 @@ import {
 } from "@/lib/stats";
 import { pulsLabel } from "@/lib/puls";
 import { countryByName } from "@/lib/data/countries";
+import { CircularFlag } from "@/components/CircularFlag";
 
 function Section({
   title,
@@ -90,7 +91,7 @@ export function ResultsDashboard({
   if (total === 0) {
     return (
       <div className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-        Još nema glasova za ovu utakmicu. Budi prvi! 🐉
+        Još nema glasova za ovu utakmicu.
       </div>
     );
   }
@@ -145,7 +146,12 @@ export function ResultsDashboard({
                 <div className="text-xs font-bold uppercase tracking-wide text-ice">
                   #{i + 1}
                 </div>
-                <div className="text-5xl">{country?.flag ?? "🌍"}</div>
+                <CircularFlag
+                  code={country?.code}
+                  emoji="🌍"
+                  size="lg"
+                  alt={c.name}
+                />
                 <div className="font-display text-2xl uppercase text-foreground">
                   {c.name}
                 </div>
@@ -182,8 +188,14 @@ export function ResultsDashboard({
                         <span className="block truncate font-semibold text-foreground">
                           {c.city}
                         </span>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {country?.flag ?? "🌍"} {c.country}
+                        <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                          <CircularFlag
+                            code={country?.code}
+                            emoji="🌍"
+                            size="xs"
+                            alt={c.country}
+                          />
+                          {c.country}
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
@@ -205,7 +217,7 @@ export function ResultsDashboard({
 
       <Section title="Predikcija rezultata">
         <Bar
-          label={`🇧🇦 Pobjeda BiH`}
+          label="Pobjeda BiH"
           value={`${dist.bihPct}%`}
           sub={`· ${dist.bih}`}
           pct={dist.bihPct}

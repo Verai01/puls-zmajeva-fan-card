@@ -3,11 +3,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { toPng, toBlob } from "html-to-image";
 import { ArrowLeft, Download, BarChart3, Share2 } from "lucide-react";
-import { submissionQuery, matchQuery } from "@/lib/queries";
+import { submissionQuery, matchQuery, submissionsQuery } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
 import { PulsCard, type PulsCardData } from "@/components/PulsCard";
 import { countryByName, flagUrl } from "@/lib/data/countries";
+import dragonLogo from "@/assets/dragon-logo.png";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/card/$submissionId")({
@@ -16,7 +17,10 @@ export const Route = createFileRoute("/card/$submissionId")({
     const sub = await context.queryClient.ensureQueryData(
       submissionQuery(params.submissionId),
     );
-    await context.queryClient.ensureQueryData(matchQuery(sub.match_id));
+    await Promise.all([
+      context.queryClient.ensureQueryData(matchQuery(sub.match_id)),
+      context.queryClient.ensureQueryData(submissionsQuery(sub.match_id)),
+    ]);
   },
   component: CardPage,
   errorComponent: () => (
@@ -33,16 +37,32 @@ export const Route = createFileRoute("/card/$submissionId")({
 });
 
 const EXPORT_OPTS = {
-  pixelRatio: 1,
+  pixelRatio: 2,
   width: 1080,
   height: 1920,
   cacheBust: true,
 } as const;
 
+function preloadImage(src: string): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = src;
+  });
+}
+
+async function preloadCardAssets(flagUrlValue: string | null | undefined) {
+  const urls = [dragonLogo, flagUrlValue].filter(Boolean) as string[];
+  await Promise.all(urls.map(preloadImage));
+}
+
 function CardPage() {
   const { submissionId } = Route.useParams();
   const { data: sub } = useSuspenseQuery(submissionQuery(submissionId));
   const { data: match } = useSuspenseQuery(matchQuery(sub.match_id));
+  useSuspenseQuery(submissionsQuery(sub.match_id));
   const exportRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<"none" | "download" | "share">("none");
 
@@ -62,11 +82,17 @@ function CardPage() {
 
   const fileName = `bih-puls-card-${sub.name.toLowerCase().replace(/\s+/g, "-")}.png`;
 
+  const captureCard = async () => {
+    if (!exportRef.current) throw new Error("Card not ready");
+    await preloadCardAssets(cardData.countryFlagUrl);
+    return exportRef.current;
+  };
+
   const handleDownload = async () => {
-    if (!exportRef.current) return;
     setBusy("download");
     try {
-      const dataUrl = await toPng(exportRef.current, EXPORT_OPTS);
+      const node = await captureCard();
+      const dataUrl = await toPng(node, EXPORT_OPTS);
       const link = document.createElement("a");
       link.download = fileName;
       link.href = dataUrl;
@@ -79,10 +105,10 @@ function CardPage() {
   };
 
   const handleShare = async () => {
-    if (!exportRef.current) return;
     setBusy("share");
     try {
-      const blob = await toBlob(exportRef.current, EXPORT_OPTS);
+      const node = await captureCard();
+      const blob = await toBlob(node, EXPORT_OPTS);
       const file = blob
         ? new File([blob], fileName, { type: "image/png" })
         : null;
@@ -93,14 +119,13 @@ function CardPage() {
         await nav.share({
           files: [file],
           title: "Puls Zmajeva",
-          text: "Moja BiH Puls Card 🐉 #DREAMBIH",
+          text: "Moja BiH Puls Card 🐉 #DREAMBIG #DREAMBIH",
         });
       } else {
         toast("Preuzmi kartu i objavi je na Instagram Story.");
-        await handleDownload();
       }
     } catch {
-      /* user cancelled share — no error toast */
+      /* user cancelled share */
     } finally {
       setBusy("none");
     }
@@ -118,7 +143,7 @@ function CardPage() {
           ★ Tvoja Puls Card je spremna ★
         </h2>
 
-        <div className="w-full max-w-[300px]">
+        <div className="w-full max-w-[300px] overflow-visible">
           <PulsCard data={cardData} />
         </div>
 
@@ -151,9 +176,17 @@ function CardPage() {
         {/* hidden high-res render for export (1080x1920) */}
         <div
           aria-hidden
-          style={{ position: "fixed", top: 0, left: -9999, width: 1080 }}
+          className="pointer-events-none"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: -10000,
+            width: 1080,
+            height: 1920,
+            overflow: "visible",
+          }}
         >
-          <PulsCard ref={exportRef} data={cardData} />
+          <PulsCard ref={exportRef} data={cardData} className="h-[1920px] w-[1080px]" />
         </div>
       </main>
     </AppShell>

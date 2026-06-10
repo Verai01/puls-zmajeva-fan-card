@@ -7,6 +7,7 @@ export type Match = Tables<"matches"> & { local_time_label?: string | null };
 export type Submission = Tables<"submissions">;
 
 export const VOTE_CUTOFF_MS = 5 * 60 * 1000; // 5 minutes before kickoff
+export const SUBMISSIONS_REFETCH_MS = 10_000;
 
 export type EffectiveStatus = "open" | "closed" | "finished";
 
@@ -86,6 +87,7 @@ export const submissionsQuery = (matchId: string) =>
   queryOptions({
     queryKey: ["submissions", matchId],
     queryFn: () => fetchSubmissions(matchId),
+    refetchInterval: SUBMISSIONS_REFETCH_MS,
   });
 
 export const submissionQuery = (id: string) =>

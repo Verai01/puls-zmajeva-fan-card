@@ -3,14 +3,15 @@ import { Clock, ChevronRight } from "lucide-react";
 import type { Match } from "@/lib/queries";
 import { effectiveStatus, isOpponentConfigured } from "@/lib/queries";
 import { countryByName } from "@/lib/data/countries";
-import { formatSarajevo } from "@/lib/format";
-import { BosniaFlag } from "@/components/BrandHeader";
+import { formatSarajevo, formatLocalTimeLine } from "@/lib/format";
+import { CircularBosniaFlag, CircularFlag } from "@/components/CircularFlag";
 
-type DisplayKey = "create" | "submitted" | "closed" | "finished" | "upcoming";
+type DisplayKey = "create" | "tip" | "submitted" | "closed" | "finished" | "upcoming";
 
 const chipStyles: Record<DisplayKey, string> = {
   create:
     "bg-primary text-primary-foreground border-primary shadow-[0_0_18px_oklch(0.84_0.17_90_/_45%)]",
+  tip: "bg-primary text-primary-foreground border-primary shadow-[0_0_18px_oklch(0.84_0.17_90_/_45%)]",
   submitted: "bg-accent/25 text-ice border-accent/50",
   closed: "bg-ice/15 text-ice border-ice/40",
   finished: "bg-secondary/60 text-foreground/70 border-border",
@@ -19,7 +20,8 @@ const chipStyles: Record<DisplayKey, string> = {
 
 const chipLabels: Record<DisplayKey, string> = {
   create: "Kreiraj Puls Card",
-  submitted: "Tipovano",
+  tip: "Tipuj utakmicu",
+  submitted: "Već tipovano",
   closed: "Glasanje zatvoreno",
   finished: "Rezultat unesen",
   upcoming: "Uskoro",
@@ -28,21 +30,24 @@ const chipLabels: Record<DisplayKey, string> = {
 export function MatchCard({
   match,
   submitted = false,
+  hasProfile = false,
 }: {
   match: Match;
   submitted?: boolean;
+  hasProfile?: boolean;
 }) {
   const configured = isOpponentConfigured(match);
   const status = effectiveStatus(match);
   const opp = countryByName(match.opponent_name);
   const finished = status === "finished";
-  const localLabel = match.local_time_label;
+  const localLine = formatLocalTimeLine(match.local_time_label);
 
   let key: DisplayKey;
   if (!configured) key = "upcoming";
   else if (finished) key = "finished";
   else if (status === "closed") key = "closed";
-  else key = submitted ? "submitted" : "create";
+  else if (submitted) key = "submitted";
+  else key = hasProfile ? "tip" : "create";
 
   return (
     <Link
@@ -54,12 +59,16 @@ export function MatchCard({
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="flex items-center gap-2 font-display text-2xl">
-            <BosniaFlag className="h-5 w-[1.8rem] shrink-0 rounded-[2px] ring-1 ring-foreground/15" />
+            <CircularBosniaFlag size="sm" />
             <span className="text-foreground">BiH</span>
           </div>
           <span className="font-display text-sm text-muted-foreground">VS</span>
           <div className="flex min-w-0 items-center gap-2 font-display text-2xl">
-            <span className="shrink-0 text-xl">{configured ? opp?.flag ?? "⚽" : "⏳"}</span>
+            {configured && opp?.code ? (
+              <CircularFlag code={opp.code} size="sm" alt={match.opponent_name} />
+            ) : (
+              <span className="shrink-0 text-xl">⏳</span>
+            )}
             <span className="truncate text-foreground">
               {configured ? match.opponent_name : "Uskoro"}
             </span>
@@ -82,8 +91,12 @@ export function MatchCard({
           </span>
           <span className="mt-0.5 block pl-5 text-[11px] text-muted-foreground">
             Sarajevo time
-            {localLabel ? ` · Lokalno: ${localLabel}` : ""}
           </span>
+          {localLine && (
+            <span className="mt-0.5 block pl-5 text-[10px] text-muted-foreground/80">
+              {localLine}
+            </span>
+          )}
         </span>
         <span
           className={`shrink-0 self-center rounded-full border px-2.5 py-1 font-bold uppercase tracking-wide ${chipStyles[key]}`}

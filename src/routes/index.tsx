@@ -1,16 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Instagram, ArrowRight, BarChart3 } from "lucide-react";
+import type { Match } from "@/lib/queries";
 import {
   matchesQuery,
+  submissionsQuery,
   effectiveStatus,
   isOpponentConfigured,
 } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
-import { BrandHeader, BosniaFlag } from "@/components/BrandHeader";
+import { BrandHeader } from "@/components/BrandHeader";
 import { PulsCard } from "@/components/PulsCard";
 import { MatchCard } from "@/components/MatchCard";
-import { useSubmittedMatches } from "@/lib/device";
+import { ResultsDashboard } from "@/components/ResultsDashboard";
+import { CircularBosniaFlag } from "@/components/CircularFlag";
+import { useSubmittedMatches, useUserProfile } from "@/lib/device";
 import { flagUrl } from "@/lib/data/countries";
 
 export const Route = createFileRoute("/")({
@@ -25,26 +29,68 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Puls Zmajeva — Kako dišu navijači BiH?" },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(matchesQuery()),
+  loader: async ({ context }) => {
+    const matches = await context.queryClient.ensureQueryData(matchesQuery());
+    await Promise.all(
+      matches
+        .filter(isOpponentConfigured)
+        .map((m) => context.queryClient.ensureQueryData(submissionsQuery(m.id))),
+    );
+  },
   component: Index,
 });
+
+function pickLiveMatch(
+  matches: Match[],
+  submitted: Record<string, string>,
+): Match | undefined {
+  const open = matches.filter(
+    (m) => isOpponentConfigured(m) && effectiveStatus(m) === "open",
+  );
+  const remaining = open.filter((m) => !submitted[m.id]);
+  return remaining[0] ?? open[0] ?? matches.find((m) => isOpponentConfigured(m));
+}
 
 function Index() {
   const { data: matches } = useSuspenseQuery(matchesQuery());
   const navigate = useNavigate();
   const submitted = useSubmittedMatches();
+  const profile = useUserProfile();
 
   const tippable = matches.filter(
     (m) => isOpponentConfigured(m) && effectiveStatus(m) === "open",
   );
   const remaining = tippable.filter((m) => !submitted[m.id]);
-  const submittedCount = matches.filter((m) => submitted[m.id]).length;
-  const hasSubmittedAny = submittedCount > 0;
+  const hasProfile = !!profile;
 
-  const handleCreate = () => {
-    const target = remaining[0] ?? tippable[0] ?? matches[0];
+  const liveMatch = pickLiveMatch(matches, submitted);
+  const submissionsMatchId =
+    liveMatch?.id ??
+    matches.find(isOpponentConfigured)?.id ??
+    matches[0]?.id ??
+    "";
+  const { data: liveSubmissions } = useSuspenseQuery(
+    submissionsQuery(submissionsMatchId),
+  );
+
+  const scrollToLiveResults = () => {
+    document.getElementById("live-results")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handlePrimaryCta = () => {
+    if (hasProfile && remaining.length === 0) {
+      scrollToLiveResults();
+      return;
+    }
+    const target = remaining[0];
     if (target) navigate({ to: "/match/$id", params: { id: target.id } });
   };
+
+  let ctaLabel = "Kreiraj svoju BiH Puls Card";
+  if (hasProfile && remaining.length > 0) ctaLabel = "Nastavi tipovati";
+  if (hasProfile && remaining.length === 0) ctaLabel = "Pogledaj rezultate";
+
+  const ctaDisabled = !hasProfile && remaining.length === 0;
 
   return (
     <AppShell>
@@ -53,7 +99,7 @@ function Index() {
       <main className="flex flex-col gap-8 px-5 pb-16 pt-6">
         {/* Hero */}
         <section className="text-center">
-          <BosniaFlag className="mx-auto h-7 w-12 rounded-[3px] shadow-[0_3px_10px_oklch(0_0_0_/_45%)] ring-1 ring-foreground/15" />
+          <CircularBosniaFlag size="md" className="mx-auto shadow-[0_3px_10px_oklch(0_0_0_/_45%)]" />
           <h1 className="mt-4 font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
             PULS<br />
             <span className="text-primary">ZMAJEVA</span>
@@ -67,20 +113,16 @@ function Index() {
           </p>
 
           <button
-            onClick={handleCreate}
-            disabled={remaining.length === 0 && tippable.length === 0}
+            onClick={handlePrimaryCta}
+            disabled={ctaDisabled}
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground gold-glow active:scale-[0.98] disabled:opacity-50"
           >
-            {hasSubmittedAny ? "Nastavi tipovati" : "Kreiraj svoju BiH Puls Card"}
+            {ctaLabel}
             <ArrowRight className="h-5 w-5" strokeWidth={3} />
           </button>
 
-          {hasSubmittedAny && (
-            <p className="mt-2 text-sm font-semibold text-ice">
-              {remaining.length > 0
-                ? "Tipuj preostale utakmice"
-                : "Tipovao si sve dostupne utakmice 🐉"}
-            </p>
+          {hasProfile && remaining.length > 0 && (
+            <p className="mt-2 text-sm font-semibold text-ice">Tipuj preostale utakmice</p>
           )}
 
           <Link
@@ -91,10 +133,8 @@ function Index() {
           </Link>
         </section>
 
-
         {/* Sample card showpiece with handwritten annotations */}
         <section className="relative mx-auto w-full max-w-[300px] pt-6">
-          {/* left annotation */}
           <div className="pointer-events-none absolute -left-1 top-10 z-20 -rotate-6 text-left">
             <p className="font-hand text-2xl font-bold leading-[0.95] text-ice drop-shadow">
               Tvoj puls
@@ -119,7 +159,6 @@ function Index() {
             </svg>
           </div>
 
-          {/* right annotation */}
           <div className="pointer-events-none absolute -right-1 top-1/2 z-20 rotate-6 text-right">
             <p className="font-hand text-2xl font-bold leading-[0.95] text-primary drop-shadow">
               Podijeli i
@@ -169,10 +208,28 @@ function Index() {
           </h2>
           <div className="flex flex-col gap-3">
             {matches.map((m) => (
-              <MatchCard key={m.id} match={m} submitted={!!submitted[m.id]} />
+              <MatchCard
+                key={m.id}
+                match={m}
+                submitted={!!submitted[m.id]}
+                hasProfile={hasProfile}
+              />
             ))}
           </div>
         </section>
+
+        {/* Live results for next open match */}
+        {liveMatch && (
+          <section id="live-results" className="flex flex-col gap-4">
+            <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
+              Live rezultati
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              BiH vs {liveMatch.opponent_name}
+            </p>
+            <ResultsDashboard match={liveMatch} submissions={liveSubmissions} />
+          </section>
+        )}
 
         {/* Instagram */}
         <a

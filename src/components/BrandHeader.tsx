@@ -1,10 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import dragonLogo from "@/assets/dragon-logo.png";
+import { CircularBosniaFlag } from "@/components/CircularFlag";
 
 /**
- * Real Bosnia & Herzegovina tricolor flag as a crisp SVG (blue field, yellow
- * triangle, diagonal row of white stars) — replaces the flat emoji so the
- * brand feels like an official matchday product.
+ * Bosnia & Herzegovina flag SVG (used inside CircularBosniaFlag for clipping).
  */
 export function BosniaFlag({ className = "" }: { className?: string }) {
   return (
@@ -13,7 +12,7 @@ export function BosniaFlag({ className = "" }: { className?: string }) {
       role="img"
       aria-label="Zastava Bosne i Hercegovine"
       className={className}
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="xMidYMid slice"
     >
       <rect width="200" height="100" fill="#1b3fb5" />
       <polygon points="100,0 200,0 200,100" fill="#ffd200" />
@@ -60,7 +59,7 @@ export function BrandHeader() {
           </span>
         </span>
       </Link>
-      <BosniaFlag className="h-6 w-[2.7rem] rounded-[3px] shadow-[0_2px_8px_oklch(0_0_0_/_45%)] ring-1 ring-foreground/15" />
+      <CircularBosniaFlag size="md" />
     </header>
   );
 }
