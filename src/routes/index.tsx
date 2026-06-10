@@ -40,8 +40,8 @@ function Index() {
       <main className="flex flex-col gap-8 px-5 pb-16 pt-6">
         {/* Hero */}
         <section className="text-center">
-          <BosniaFlag className="text-3xl" />
-          <h1 className="mt-2 font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
+          <BosniaFlag className="mx-auto h-7 w-12 rounded-[3px] shadow-[0_3px_10px_oklch(0_0_0_/_45%)] ring-1 ring-foreground/15" />
+          <h1 className="mt-4 font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
             PULS<br />
             <span className="text-primary">ZMAJEVA</span>
           </h1>
