@@ -38,3 +38,9 @@ export function countryByCode(code: string): Country | undefined {
 export function countryByName(name: string): Country | undefined {
   return COUNTRIES.find((c) => c.name === name);
 }
+
+/** Round/rectangular flag image URL (CORS-enabled) for high-quality card rendering. */
+export function flagUrl(code?: string | null): string | null {
+  if (!code || code === "XX") return null;
+  return `https://flagcdn.com/w320/${code.toLowerCase()}.png`;
+}

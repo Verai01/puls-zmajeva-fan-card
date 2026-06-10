@@ -57,6 +57,27 @@ function Bar({
   );
 }
 
+/** Horizontal snap carousel with paging dots. */
+function Swiper({ count, children }: { count: number; children: React.ReactNode }) {
+  return (
+    <div>
+      <div
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ scrollPaddingInline: "0px" }}
+      >
+        {children}
+      </div>
+      {count > 1 && (
+        <div className="mt-1 flex justify-center gap-1.5">
+          {Array.from({ length: count }).map((_, i) => (
+            <span key={i} className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ResultsDashboard({
   match,
   submissions,
@@ -69,15 +90,19 @@ export function ResultsDashboard({
   if (total === 0) {
     return (
       <div className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-        Još nema pulseva za ovu utakmicu. Budi prvi! 🐉
+        Još nema glasova za ovu utakmicu. Budi prvi! 🐉
       </div>
     );
   }
 
   const avg = averagePuls(submissions);
-  const byCountry = pulsByCountry(submissions).slice(0, 6);
-  const cities = topCities(submissions, 5);
+  const byCountry = pulsByCountry(submissions, 5);
+  const cities = topCities(submissions, 10);
   const dist = predictionDistribution(submissions);
+
+  // city slides of 3 (1-3, 4-6, 7-10)
+  const citySlides: typeof cities[] = [];
+  for (let i = 0; i < cities.length; i += 3) citySlides.push(cities.slice(i, i + 3));
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,7 +118,7 @@ export function ResultsDashboard({
             </div>
           </div>
           <div className="text-right text-sm text-muted-foreground">
-            {total} {total === 1 ? "puls" : "pulseva"}
+            {total} {total === 1 ? "glas" : "glasova"}
           </div>
         </div>
         <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-[oklch(0.16_0.1_266)]">
@@ -109,31 +134,73 @@ export function ResultsDashboard({
       </Section>
 
       <Section title="Puls po državama">
-        {byCountry.map((c) => {
-          const country = countryByName(c.key);
-          return (
-            <Bar
-              key={c.key}
-              label={`${country?.flag ?? "🌍"} ${c.key}`}
-              value={String(c.avg)}
-              sub={`· ${c.count}`}
-              pct={c.avg}
-            />
-          );
-        })}
+        <Swiper count={byCountry.length}>
+          {byCountry.map((c, i) => {
+            const country = countryByName(c.name);
+            return (
+              <div
+                key={c.name}
+                className="flex min-w-full snap-center flex-col items-center gap-1 rounded-2xl bg-[oklch(0.16_0.1_266)] p-5 text-center"
+              >
+                <div className="text-xs font-bold uppercase tracking-wide text-ice">
+                  #{i + 1}
+                </div>
+                <div className="text-5xl">{country?.flag ?? "🌍"}</div>
+                <div className="font-display text-2xl uppercase text-foreground">
+                  {c.name}
+                </div>
+                <div className="font-display text-5xl leading-none text-primary">
+                  {c.avg}
+                  <span className="text-xl text-foreground/70">/100</span>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {c.count} {c.count === 1 ? "glas" : "glasova"}
+                </div>
+              </div>
+            );
+          })}
+        </Swiper>
       </Section>
 
       <Section title="Top gradovi">
-        {cities.map((c, i) => (
-          <Bar
-            key={c.key}
-            label={`${i + 1}. ${c.key}`}
-            value={`${c.count}×`}
-            sub={`puls ${c.avg}`}
-            pct={(c.count / cities[0].count) * 100}
-            color="var(--royal-light)"
-          />
-        ))}
+        <Swiper count={citySlides.length}>
+          {citySlides.map((slide, si) => (
+            <div key={si} className="min-w-full snap-center">
+              <div className="flex flex-col gap-2">
+                {slide.map((c, idx) => {
+                  const rank = si * 3 + idx + 1;
+                  const country = countryByName(c.country);
+                  return (
+                    <div
+                      key={`${c.city}-${rank}`}
+                      className="flex items-center gap-3 rounded-xl bg-[oklch(0.16_0.1_266)] px-3 py-2.5"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 font-display text-base text-primary">
+                        {rank}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-semibold text-foreground">
+                          {c.city}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {country?.flag ?? "🌍"} {c.country}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="font-display text-lg text-primary">
+                          {c.count}
+                        </span>
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          {c.count === 1 ? "glas" : "glasova"}
+                        </span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </Swiper>
       </Section>
 
       <Section title="Predikcija rezultata">

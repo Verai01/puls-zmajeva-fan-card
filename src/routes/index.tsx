@@ -1,11 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Instagram, ArrowRight, BarChart3 } from "lucide-react";
-import { matchesQuery, effectiveStatus } from "@/lib/queries";
+import {
+  matchesQuery,
+  effectiveStatus,
+  isOpponentConfigured,
+} from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader, BosniaFlag } from "@/components/BrandHeader";
 import { PulsCard } from "@/components/PulsCard";
 import { MatchCard } from "@/components/MatchCard";
+import { useSubmittedMatches } from "@/lib/device";
+import { flagUrl } from "@/lib/data/countries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,11 +32,18 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { data: matches } = useSuspenseQuery(matchesQuery());
   const navigate = useNavigate();
-  const firstOpen = matches.find((m) => effectiveStatus(m) === "open");
+  const submitted = useSubmittedMatches();
+
+  const tippable = matches.filter(
+    (m) => isOpponentConfigured(m) && effectiveStatus(m) === "open",
+  );
+  const remaining = tippable.filter((m) => !submitted[m.id]);
+  const submittedCount = matches.filter((m) => submitted[m.id]).length;
+  const hasSubmittedAny = submittedCount > 0;
 
   const handleCreate = () => {
-    const target = firstOpen ?? matches[0];
-    if (target) navigate({ to: "/create/$matchId", params: { matchId: target.id } });
+    const target = remaining[0] ?? tippable[0] ?? matches[0];
+    if (target) navigate({ to: "/match/$id", params: { id: target.id } });
   };
 
   return (
@@ -55,11 +68,20 @@ function Index() {
 
           <button
             onClick={handleCreate}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground gold-glow active:scale-[0.98]"
+            disabled={remaining.length === 0 && tippable.length === 0}
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground gold-glow active:scale-[0.98] disabled:opacity-50"
           >
-            Kreiraj svoju BiH Puls Card
+            {hasSubmittedAny ? "Nastavi tipovati" : "Kreiraj svoju BiH Puls Card"}
             <ArrowRight className="h-5 w-5" strokeWidth={3} />
           </button>
+
+          {hasSubmittedAny && (
+            <p className="mt-2 text-sm font-semibold text-ice">
+              {remaining.length > 0
+                ? "Tipuj preostale utakmice"
+                : "Tipovao si sve dostupne utakmice 🐉"}
+            </p>
+          )}
 
           <Link
             to="/leaderboard"
@@ -68,6 +90,7 @@ function Index() {
             <BarChart3 className="h-4 w-4" /> Pogledaj rezultate
           </Link>
         </section>
+
 
         {/* Sample card showpiece with handwritten annotations */}
         <section className="relative mx-auto w-full max-w-[300px] pt-6">
@@ -127,6 +150,7 @@ function Index() {
                 name: "AMIR",
                 cityDisplay: "Malmö",
                 countryFlag: "🇸🇪",
+                countryFlagUrl: flagUrl("SE"),
                 countryName: "Švedska",
                 opponentName: "Švicarska",
                 bihScore: 2,
@@ -145,7 +169,7 @@ function Index() {
           </h2>
           <div className="flex flex-col gap-3">
             {matches.map((m) => (
-              <MatchCard key={m.id} match={m} />
+              <MatchCard key={m.id} match={m} submitted={!!submitted[m.id]} />
             ))}
           </div>
         </section>
