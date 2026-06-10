@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      matches: {
+        Row: {
+          bih_final_score: number | null
+          created_at: string
+          id: string
+          kickoff_time: string
+          opponent_final_score: number | null
+          opponent_name: string
+          status: Database["public"]["Enums"]["match_status"]
+        }
+        Insert: {
+          bih_final_score?: number | null
+          created_at?: string
+          id?: string
+          kickoff_time: string
+          opponent_final_score?: number | null
+          opponent_name: string
+          status?: Database["public"]["Enums"]["match_status"]
+        }
+        Update: {
+          bih_final_score?: number | null
+          created_at?: string
+          id?: string
+          kickoff_time?: string
+          opponent_final_score?: number | null
+          opponent_name?: string
+          status?: Database["public"]["Enums"]["match_status"]
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          bih_score: number
+          city_display: string
+          city_normalized: string
+          country: string
+          created_at: string
+          id: string
+          match_id: string
+          name: string
+          opponent_score: number
+          puls_label: string
+          puls_value: number
+        }
+        Insert: {
+          bih_score: number
+          city_display: string
+          city_normalized: string
+          country: string
+          created_at?: string
+          id?: string
+          match_id: string
+          name: string
+          opponent_score: number
+          puls_label: string
+          puls_value: number
+        }
+        Update: {
+          bih_score?: number
+          city_display?: string
+          city_normalized?: string
+          country?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          name?: string
+          opponent_score?: number
+          puls_label?: string
+          puls_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +102,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      match_status: "open" | "closed" | "finished"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +229,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      match_status: ["open", "closed", "finished"],
+    },
   },
 } as const
