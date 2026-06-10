@@ -1,26 +1,66 @@
 import { Link } from "@tanstack/react-router";
-import { Activity } from "lucide-react";
+import dragonLogo from "@/assets/dragon-logo.png";
 
+/**
+ * Real Bosnia & Herzegovina tricolor flag as a crisp SVG (blue field, yellow
+ * triangle, diagonal row of white stars) — replaces the flat emoji so the
+ * brand feels like an official matchday product.
+ */
 export function BosniaFlag({ className = "" }: { className?: string }) {
   return (
-    <span role="img" aria-label="Zastava Bosne i Hercegovine" className={className}>
-      🇧🇦
-    </span>
+    <svg
+      viewBox="0 0 200 100"
+      role="img"
+      aria-label="Zastava Bosne i Hercegovine"
+      className={className}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <rect width="200" height="100" fill="#1b3fb5" />
+      <polygon points="100,0 200,0 200,100" fill="#ffd200" />
+      <g fill="#ffffff">
+        {Array.from({ length: 9 }).map((_, i) => {
+          const x = 96 + i * 12.5;
+          const y = -3 + i * 12.5;
+          const r = 5.2;
+          const pts = Array.from({ length: 5 })
+            .map((_, k) => {
+              const a = (Math.PI / 180) * (-90 + k * 72);
+              return `${(x + r * Math.cos(a)).toFixed(1)},${(y + r * Math.sin(a)).toFixed(1)}`;
+            })
+            .flatMap((p, k) => {
+              const a = (Math.PI / 180) * (-90 + k * 72 + 36);
+              const inner = `${(x + r * 0.42 * Math.cos(a)).toFixed(1)},${(y + r * 0.42 * Math.sin(a)).toFixed(1)}`;
+              return [p, inner];
+            })
+            .join(" ");
+          return <polygon key={i} points={pts} />;
+        })}
+      </g>
+    </svg>
   );
 }
 
 export function BrandHeader() {
   return (
-    <header className="flex items-center justify-between px-5 pt-5">
-      <Link to="/" className="flex items-center gap-2">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground gold-glow">
-          <Activity className="h-5 w-5" strokeWidth={3} />
-        </span>
-        <span className="font-display text-lg leading-none tracking-wide text-foreground">
-          PULS <span className="text-primary">ZMAJEVA</span>
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-primary/15 bg-[oklch(0.2_0.12_266_/_70%)] px-5 py-3 backdrop-blur-md">
+      <Link to="/" className="flex items-center gap-2.5">
+        <img
+          src={dragonLogo}
+          alt="Puls Zmajeva"
+          width={40}
+          height={40}
+          className="h-9 w-9 shrink-0 drop-shadow-[0_2px_8px_oklch(0.84_0.17_90_/_45%)]"
+        />
+        <span className="flex flex-col leading-[0.85]">
+          <span className="font-display text-base tracking-[0.08em] text-foreground">
+            PULS
+          </span>
+          <span className="font-display text-base tracking-[0.08em] text-primary">
+            ZMAJEVA
+          </span>
         </span>
       </Link>
-      <BosniaFlag className="text-2xl" />
+      <BosniaFlag className="h-6 w-[2.7rem] rounded-[3px] shadow-[0_2px_8px_oklch(0_0_0_/_45%)] ring-1 ring-foreground/15" />
     </header>
   );
 }
