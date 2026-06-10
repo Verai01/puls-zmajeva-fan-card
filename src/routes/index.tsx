@@ -150,6 +150,7 @@ function Index() {
                 name: "AMIR",
                 cityDisplay: "Malmö",
                 countryFlag: "🇸🇪",
+                countryFlagUrl: flagUrl("SE"),
                 countryName: "Švedska",
                 opponentName: "Švicarska",
                 bihScore: 2,
