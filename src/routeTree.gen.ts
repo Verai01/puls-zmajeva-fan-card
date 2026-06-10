@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MatchIdRouteImport } from './routes/match.$id'
 import { Route as CreateMatchIdRouteImport } from './routes/create.$matchId'
+import { Route as CardSubmissionIdRouteImport } from './routes/card.$submissionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,33 +29,47 @@ const CreateMatchIdRoute = CreateMatchIdRouteImport.update({
   path: '/create/$matchId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CardSubmissionIdRoute = CardSubmissionIdRouteImport.update({
+  id: '/card/$submissionId',
+  path: '/card/$submissionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create/$matchId' | '/match/$id'
+  fullPaths: '/' | '/card/$submissionId' | '/create/$matchId' | '/match/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create/$matchId' | '/match/$id'
-  id: '__root__' | '/' | '/create/$matchId' | '/match/$id'
+  to: '/' | '/card/$submissionId' | '/create/$matchId' | '/match/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/card/$submissionId'
+    | '/create/$matchId'
+    | '/match/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CardSubmissionIdRoute: typeof CardSubmissionIdRoute
   CreateMatchIdRoute: typeof CreateMatchIdRoute
   MatchIdRoute: typeof MatchIdRoute
 }
@@ -82,11 +97,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateMatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/card/$submissionId': {
+      id: '/card/$submissionId'
+      path: '/card/$submissionId'
+      fullPath: '/card/$submissionId'
+      preLoaderRoute: typeof CardSubmissionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CardSubmissionIdRoute: CardSubmissionIdRoute,
   CreateMatchIdRoute: CreateMatchIdRoute,
   MatchIdRoute: MatchIdRoute,
 }
