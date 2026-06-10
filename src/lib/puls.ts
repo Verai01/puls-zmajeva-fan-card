@@ -18,6 +18,13 @@ export function pulsLabel(value: number): string {
   return cat ? cat.label : "Realista";
 }
 
+/** Index 0-4 of the puls category, used for card atmosphere variations. */
+export function pulsCategoryIndex(value: number): number {
+  const v = Math.max(1, Math.min(100, Math.round(value)));
+  const idx = PULS_CATEGORIES.findIndex((c) => v >= c.min && v <= c.max);
+  return idx === -1 ? 2 : idx;
+}
+
 /**
  * Points for the leaderboard.
  *  - Exact result => 3
