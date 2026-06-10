@@ -4,11 +4,12 @@ import type { Match } from "@/lib/queries";
 import { effectiveStatus } from "@/lib/queries";
 import { countryByName } from "@/lib/data/countries";
 import { formatKickoff, statusLabel } from "@/lib/format";
+import { BosniaFlag } from "@/components/BrandHeader";
 
 const statusStyles: Record<string, string> = {
-  open: "bg-primary/20 text-primary border-primary/40",
+  open: "bg-primary text-primary-foreground border-primary shadow-[0_0_18px_oklch(0.84_0.17_90_/_45%)]",
   closed: "bg-ice/15 text-ice border-ice/40",
-  finished: "bg-secondary text-foreground/70 border-border",
+  finished: "bg-secondary/60 text-foreground/60 border-border",
 };
 
 export function MatchCard({ match }: { match: Match }) {
@@ -20,20 +21,19 @@ export function MatchCard({ match }: { match: Match }) {
     <Link
       to="/match/$id"
       params={{ id: match.id }}
-      className="glass-card group block rounded-2xl p-4 transition active:scale-[0.99]"
+      className="glass-card group relative block overflow-hidden rounded-2xl p-4 transition active:scale-[0.99]"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="flex items-center gap-2 font-display text-2xl">
-            <span>🇧🇦</span>
+            <BosniaFlag className="h-5 w-[1.8rem] shrink-0 rounded-[2px] ring-1 ring-foreground/15" />
             <span className="text-foreground">BiH</span>
           </div>
           <span className="font-display text-sm text-muted-foreground">VS</span>
-          <div className="flex items-center gap-2 font-display text-2xl">
-            <span>{opp?.flag ?? "⚽"}</span>
-            <span className="max-w-[120px] truncate text-foreground">
-              {match.opponent_name}
-            </span>
+          <div className="flex min-w-0 items-center gap-2 font-display text-2xl">
+            <span className="shrink-0">{opp?.flag ?? "⚽"}</span>
+            <span className="truncate text-foreground">{match.opponent_name}</span>
           </div>
         </div>
         <ChevronRight className="h-5 w-5 shrink-0 text-primary transition group-hover:translate-x-0.5" />
