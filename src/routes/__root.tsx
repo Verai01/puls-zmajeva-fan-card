@@ -76,20 +76,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1",
+      },
+      { title: "Puls Zmajeva — Kako dišu navijači BiH?" },
+      {
+        name: "description",
+        content:
+          "Tipuj rezultat, unesi svoj puls i napravi svoju BiH Puls Card. Najveća navijačka zajednica BiH na svijetu.",
+      },
+      { name: "author", content: "Puls Zmajeva" },
+      { name: "theme-color", content: "#143ba0" },
+      { property: "og:title", content: "Puls Zmajeva — Kako dišu navijači BiH?" },
+      {
+        property: "og:description",
+        content:
+          "Tipuj rezultat, unesi svoj puls i napravi svoju BiH Puls Card.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Barlow+Semi+Condensed:wght@600;700;800&display=swap",
       },
     ],
   }),
