@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           id: string
           kickoff_time: string
+          local_time_label: string | null
           opponent_final_score: number | null
           opponent_name: string
           status: Database["public"]["Enums"]["match_status"]
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           id?: string
           kickoff_time: string
+          local_time_label?: string | null
           opponent_final_score?: number | null
           opponent_name: string
           status?: Database["public"]["Enums"]["match_status"]
@@ -38,6 +40,7 @@ export type Database = {
           created_at?: string
           id?: string
           kickoff_time?: string
+          local_time_label?: string | null
           opponent_final_score?: number | null
           opponent_name?: string
           status?: Database["public"]["Enums"]["match_status"]
