@@ -1,15 +1,25 @@
 import type { EffectiveStatus } from "@/lib/queries";
 
-const dtf = new Intl.DateTimeFormat("bs-BA", {
+const sarajevoFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Sarajevo",
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  hour12: false,
 });
 
+/** "12.06.2026 21:00" in Sarajevo time. */
+export function formatSarajevo(iso: string): string {
+  const parts = sarajevoFmt.formatToParts(new Date(iso));
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("day")}.${get("month")}.${get("year")} ${get("hour")}:${get("minute")}`;
+}
+
+/** Kept for backwards compatibility — now uses Sarajevo time. */
 export function formatKickoff(iso: string): string {
-  return dtf.format(new Date(iso)).replace(",", " ·");
+  return formatSarajevo(iso);
 }
 
 export function statusLabel(status: EffectiveStatus): string {
@@ -19,7 +29,7 @@ export function statusLabel(status: EffectiveStatus): string {
     case "closed":
       return "Glasanje zatvoreno";
     case "finished":
-      return "Završeno";
+      return "Rezultat unesen";
   }
 }
 
