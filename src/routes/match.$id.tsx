@@ -1,12 +1,19 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeft, PlusCircle } from "lucide-react";
-import { matchQuery, submissionsQuery, effectiveStatus } from "@/lib/queries";
+import { ArrowLeft, PlusCircle, IdCard, BarChart3 } from "lucide-react";
+import {
+  matchQuery,
+  submissionsQuery,
+  effectiveStatus,
+  isOpponentConfigured,
+} from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
 import { ResultsDashboard } from "@/components/ResultsDashboard";
 import { countryByName } from "@/lib/data/countries";
-import { formatKickoff, statusLabel, VOTING_CLOSED_MESSAGE } from "@/lib/format";
+import { formatSarajevo, statusLabel, VOTING_CLOSED_MESSAGE } from "@/lib/format";
+import { getSubmittedId } from "@/lib/device";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/match/$id")({
   head: () => ({
