@@ -14,6 +14,10 @@ import { I18nProvider } from "@/lib/i18n";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+// Canonical site origin used for absolute Open Graph / Twitter URLs.
+// Change this to the custom domain (e.g. https://pulszmajeva.com) once it's live.
+const SITE_URL = "https://puls-zmajeva-fan-card.vercel.app";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -98,10 +102,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Prognoziraj rezultat, unesi svoj puls i napravi svoju BiH Puls Card.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Puls Zmajeva" },
+      // Absolute URLs for reliable link previews (WhatsApp/Facebook/Instagram).
+      // Update SITE_URL to the custom domain once it is connected.
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: `${SITE_URL}/og-image.png` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Puls Zmajeva — Kako dišu navijači BiH?" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Puls Zmajeva — Kako dišu navijači BiH?" },
+      {
+        name: "twitter:description",
+        content:
+          "Prognoziraj rezultat, unesi svoj puls i napravi svoju BiH Puls Card.",
+      },
+      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/flags/ba.svg" },
+      { rel: "apple-touch-icon", href: "/flags/ba.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
@@ -122,7 +143,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="bs">
       <head>
         <HeadContent />
       </head>
