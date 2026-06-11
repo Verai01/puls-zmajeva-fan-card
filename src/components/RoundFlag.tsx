@@ -23,13 +23,14 @@ export function localFlagUrl(code?: string | null): string | null {
   return LOCAL_FLAGS.has(c) ? `/flags/${c}.svg` : null;
 }
 
-const baseRing = "ring-1 ring-foreground/15";
-const activeRing = "ring-2 ring-primary";
+// Perfectly round, rimless flag: no border, ring, outline or rim shadow.
+const FLAG_CLASS = "shrink-0 rounded-full object-cover object-center";
 
 /**
  * Single reusable round flag used everywhere (header, match cards, scoreboard,
  * Puls Card, dashboards, rankings). Prefers crisp local round SVGs and falls
- * back to flagcdn for any other configured country, then to an emoji.
+ * back to flagcdn for any other configured country, then to an emoji. Always
+ * borderless / ringless.
  */
 export function RoundFlag({
   code,
@@ -37,28 +38,18 @@ export function RoundFlag({
   size = "sm",
   className,
   alt = "",
-  active = false,
 }: {
   code?: string | null;
   emoji?: string;
   size?: FlagSize;
   className?: string;
   alt?: string;
-  /** Draws a subtle yellow ring (used by the language selector). */
-  active?: boolean;
 }) {
   const dim = SIZE_CLASS[size];
-  const ring = active ? activeRing : baseRing;
 
   const local = localFlagUrl(code);
   if (local) {
-    return (
-      <img
-        src={local}
-        alt={alt}
-        className={cn("shrink-0 rounded-full object-cover", ring, dim, className)}
-      />
-    );
+    return <img src={local} alt={alt} className={cn(FLAG_CLASS, dim, className)} />;
   }
 
   if (code && code !== "XX") {
@@ -67,7 +58,7 @@ export function RoundFlag({
         src={`https://flagcdn.com/w320/${code.toLowerCase()}.png`}
         alt={alt}
         crossOrigin="anonymous"
-        className={cn("shrink-0 rounded-full object-cover", ring, dim, className)}
+        className={cn(FLAG_CLASS, dim, className)}
       />
     );
   }
@@ -77,7 +68,6 @@ export function RoundFlag({
       <span
         className={cn(
           "inline-grid shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-base leading-none",
-          ring,
           dim,
           className,
         )}
@@ -94,11 +84,9 @@ export function RoundFlag({
 export function BosniaRoundFlag({
   size = "sm",
   className,
-  active = false,
 }: {
   size?: FlagSize;
   className?: string;
-  active?: boolean;
 }) {
-  return <RoundFlag code="BA" size={size} className={className} active={active} alt="BiH" />;
+  return <RoundFlag code="BA" size={size} className={className} alt="BiH" />;
 }

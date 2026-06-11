@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Menu, X, Home, CalendarDays, BarChart3, Instagram } from "lucide-react";
-import dragonLogo from "@/assets/dragon-logo.png";
 import { RoundFlag } from "@/components/RoundFlag";
+import { cn } from "@/lib/utils";
 import { useI18n, type Locale } from "@/lib/i18n";
 
 const LANGS: { code: Locale; flag: string; label: string }[] = [
@@ -11,23 +11,40 @@ const LANGS: { code: Locale; flag: string; label: string }[] = [
   { code: "bs", flag: "BA", label: "Bosanski" },
 ];
 
-/** Top-right language selector: German, US (English), Bosnia. */
+/**
+ * Top-right language selector: German, US (English), Bosnia. Flags are rimless;
+ * the active language is shown by a small gold dot + full opacity (no ring).
+ */
 function LanguageSelector() {
   const { locale, setLocale } = useI18n();
   return (
-    <div className="flex items-center gap-1.5">
-      {LANGS.map((l) => (
-        <button
-          key={l.code}
-          type="button"
-          onClick={() => setLocale(l.code)}
-          aria-label={l.label}
-          aria-pressed={locale === l.code}
-          className="rounded-full transition active:scale-90"
-        >
-          <RoundFlag code={l.flag} size="sm" active={locale === l.code} alt={l.label} />
-        </button>
-      ))}
+    <div className="flex items-center gap-2">
+      {LANGS.map((l) => {
+        const isActive = locale === l.code;
+        return (
+          <button
+            key={l.code}
+            type="button"
+            onClick={() => setLocale(l.code)}
+            aria-label={l.label}
+            aria-pressed={isActive}
+            className="flex flex-col items-center gap-1 transition active:scale-90"
+          >
+            <RoundFlag
+              code={l.flag}
+              size="sm"
+              alt={l.label}
+              className={cn("transition", isActive ? "opacity-100" : "opacity-55")}
+            />
+            <span
+              className={cn(
+                "h-1 w-1 rounded-full transition-all",
+                isActive ? "bg-primary" : "bg-transparent",
+              )}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -97,28 +114,15 @@ function HamburgerMenu() {
   );
 }
 
-/** Premium compact brand mark: dragon badge + tight wordmark. */
+/** Text-only single-line wordmark (no icon/badge). */
 function BrandMark() {
   return (
-    <Link to="/" className="flex items-center gap-2.5">
-      <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[oklch(0.16_0.1_266)] ring-1 ring-primary/55 shadow-[0_2px_10px_oklch(0.84_0.17_90_/_30%)]">
-        <span className="pointer-events-none absolute inset-x-1 top-0.5 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-        <img
-          src={dragonLogo}
-          alt="Puls Zmajeva"
-          width={32}
-          height={32}
-          className="h-7 w-7 object-contain drop-shadow-[0_1px_4px_oklch(0.84_0.17_90_/_55%)]"
-        />
-      </span>
-      <span className="flex flex-col leading-[0.82]">
-        <span className="font-display text-[1.05rem] tracking-[0.14em] text-foreground">
-          PULS
-        </span>
-        <span className="font-display text-[1.05rem] tracking-[0.14em] text-primary">
-          ZMAJEVA
-        </span>
-      </span>
+    <Link
+      to="/"
+      className="flex items-center whitespace-nowrap font-display text-xl tracking-[0.06em]"
+    >
+      <span className="text-foreground">Puls&nbsp;</span>
+      <span className="text-primary">Zmajeva</span>
     </Link>
   );
 }

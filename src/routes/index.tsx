@@ -151,14 +151,10 @@ function Index() {
       <main className="flex flex-col gap-8 px-5 pb-16 pt-7">
         {/* Hero */}
         <section className="text-center">
-          <h1 className="font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
-            PULS
-            <br />
-            <span className="text-primary">ZMAJEVA</span>
+          <h1 className="font-display text-[2.4rem] leading-[1.02] uppercase tracking-tight text-stroke-royal">
+            <span className="text-foreground">{t("landing.heroLine1")}</span>{" "}
+            <span className="text-primary">{t("landing.heroLine2")}</span>
           </h1>
-          <p className="mt-3 text-sm font-bold uppercase tracking-[0.18em] text-ice">
-            {t("landing.tagline")}
-          </p>
           <p className="mx-auto mt-4 max-w-xs text-base text-foreground/85">
             {t("landing.heroLead")}{" "}
             <span className="font-bold text-primary">{t("landing.heroLeadStrong")}</span>

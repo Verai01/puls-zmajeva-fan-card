@@ -35,6 +35,8 @@ const bs: Dict = {
 
   // landing
   "landing.tagline": "Kako dišu navijači BiH?",
+  "landing.heroLine1": "Kako dišu",
+  "landing.heroLine2": "navijači BiH?",
   "landing.heroLead": "Unesi svoj puls, tipuj rezultat i budi dio najveće navijačke zajednice",
   "landing.heroLeadStrong": "na svijetu.",
   "landing.ctaCreate": "Kreiraj svoju BiH Puls Card",
@@ -150,6 +152,8 @@ const en: Dict = {
 
   // landing
   "landing.tagline": "How do BiH fans feel?",
+  "landing.heroLine1": "How do",
+  "landing.heroLine2": "BiH fans feel?",
   "landing.heroLead": "Enter your pulse, predict the score and join the biggest fan community",
   "landing.heroLeadStrong": "in the world.",
   "landing.ctaCreate": "Create your BiH Puls Card",
@@ -265,6 +269,8 @@ const de: Dict = {
 
   // landing
   "landing.tagline": "Wie fühlen die BiH-Fans?",
+  "landing.heroLine1": "Wie fühlen",
+  "landing.heroLine2": "die BiH-Fans?",
   "landing.heroLead": "Gib deinen Puls ein, tippe das Ergebnis und werde Teil der größten Fan-Community",
   "landing.heroLeadStrong": "der Welt.",
   "landing.ctaCreate": "Erstelle deine BiH Puls Card",
