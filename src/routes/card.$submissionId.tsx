@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { toPng, toBlob } from "html-to-image";
@@ -7,9 +7,11 @@ import { submissionQuery, matchQuery, submissionsQuery } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
 import { PulsCard, type PulsCardData } from "@/components/PulsCard";
+import { PulsCardCarousel } from "@/components/PulsCardCarousel";
 import { localFlagUrl } from "@/components/RoundFlag";
 import { countryByName, countryDisplayName, flagUrl } from "@/lib/data/countries";
 import { pulsLabel } from "@/lib/puls";
+import { useUserCards } from "@/lib/useUserCards";
 import { useI18n } from "@/lib/i18n";
 import dragonLogo from "@/assets/dragon-logo.png";
 import { toast } from "sonner";
@@ -67,11 +69,15 @@ function CardPage() {
   const { data: match } = useSuspenseQuery(matchQuery(sub.match_id));
   useSuspenseQuery(submissionsQuery(sub.match_id));
   const { t, locale } = useI18n();
+  const { cards: userCards } = useUserCards(locale);
   const exportRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<"none" | "download" | "share">("none");
+  const [active, setActive] = useState(0);
 
+  // The card from the URL, always available (fallback when the carousel hasn't
+  // resolved every submission yet).
   const country = countryByName(sub.country);
-  const cardData: PulsCardData = {
+  const currentCard: PulsCardData = {
     name: sub.name,
     cityDisplay: sub.city_display,
     countryFlag: country?.flag ?? "🌍",
@@ -84,11 +90,18 @@ function CardPage() {
     pulsLabel: pulsLabel(sub.puls_value, locale),
   };
 
-  const fileName = `bih-puls-card-${sub.name.toLowerCase().replace(/\s+/g, "-")}.png`;
+  const cards = userCards.length > 0 ? userCards.map((c) => c.data) : [currentCard];
+  const initialIndex = useMemo(() => {
+    const i = userCards.findIndex((c) => c.submissionId === submissionId);
+    return i >= 0 ? i : 0;
+  }, [userCards, submissionId]);
+
+  const exportCard = cards[active] ?? currentCard;
+  const fileName = `bih-puls-card-${exportCard.name.toLowerCase().replace(/\s+/g, "-")}.png`;
 
   const captureCard = async () => {
     if (!exportRef.current) throw new Error("Card not ready");
-    await preloadCardAssets(cardData.countryFlagUrl);
+    await preloadCardAssets(exportCard.countryFlagUrl);
     return exportRef.current;
   };
 
@@ -113,9 +126,7 @@ function CardPage() {
     try {
       const node = await captureCard();
       const blob = await toBlob(node, EXPORT_OPTS);
-      const file = blob
-        ? new File([blob], fileName, { type: "image/png" })
-        : null;
+      const file = blob ? new File([blob], fileName, { type: "image/png" }) : null;
       const nav = navigator as Navigator & {
         canShare?: (d: ShareData) => boolean;
       };
@@ -147,9 +158,20 @@ function CardPage() {
           {t("card.ready")}
         </h2>
 
-        <div className="w-full max-w-[300px] overflow-visible">
-          <PulsCard data={cardData} />
+        <div className="w-full max-w-[320px] overflow-visible">
+          <PulsCardCarousel
+            cards={cards}
+            initialIndex={initialIndex}
+            onActiveChange={setActive}
+            cardMaxWidthClass="max-w-[280px]"
+          />
         </div>
+
+        {cards.length > 1 && (
+          <p className="-mt-2 text-xs font-semibold uppercase tracking-wide text-ice/70">
+            {t("card.swipeHint")}
+          </p>
+        )}
 
         <button
           onClick={handleDownload}
@@ -177,7 +199,7 @@ function CardPage() {
           <BarChart3 className="h-4 w-4" /> {t("card.viewLive")}
         </Link>
 
-        {/* hidden high-res render for export (1080x1920) */}
+        {/* hidden high-res render of the active card for export (1080x1920) */}
         <div
           aria-hidden
           className="pointer-events-none"
@@ -190,7 +212,7 @@ function CardPage() {
             overflow: "visible",
           }}
         >
-          <PulsCard ref={exportRef} data={cardData} className="h-[1920px] w-[1080px]" />
+          <PulsCard ref={exportRef} data={exportCard} className="h-[1920px] w-[1080px]" />
         </div>
       </main>
     </AppShell>

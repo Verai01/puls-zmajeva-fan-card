@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-export type Locale = "bs" | "en";
+export type Locale = "bs" | "en" | "de";
 
 export const LOCALE_STORAGE_KEY = "pulszmajeva_locale";
 export const DEFAULT_LOCALE: Locale = "bs";
@@ -27,14 +27,24 @@ const bs: Dict = {
   "common.sarajevoTime": "Sarajevo vrijeme",
   "common.localTime": "Lokalno vrijeme",
 
+  // nav (hamburger menu)
+  "nav.home": "Početna",
+  "nav.matches": "Utakmice",
+  "nav.results": "Rezultati",
+  "nav.instagram": "Instagram",
+
   // landing
-  "landing.tagline": "━ Kako dišu navijači BiH? ━",
+  "landing.tagline": "Kako dišu navijači BiH?",
   "landing.heroLead": "Unesi svoj puls, tipuj rezultat i budi dio najveće navijačke zajednice",
   "landing.heroLeadStrong": "na svijetu.",
   "landing.ctaCreate": "Kreiraj svoju BiH Puls Card",
   "landing.ctaContinue": "Nastavi tipovati",
   "landing.ctaViewResults": "Pogledaj rezultate",
   "landing.continueHint": "Tipuj preostale utakmice",
+  "landing.howItWorks": "Kako funkcioniše?",
+  "landing.step1": "Napravi svoju BiH Puls Card",
+  "landing.step2": "Tipuj utakmice BiH prije početka",
+  "landing.step3": "Podijeli karticu i prati live rezultate navijača",
   "landing.annLeft": "Tvoj puls\ntvoja priča",
   "landing.annRight": "Podijeli i\npodrži Zmajeve!",
   "landing.sectionActual": "★ Aktuelno ★",
@@ -101,6 +111,7 @@ const bs: Dict = {
   "card.shareFallback": "Preuzmi kartu i objavi je na Instagram Story.",
   "card.downloadError": "Greška pri preuzimanju. Pokušaj ponovo.",
   "card.notFound": "Card nije pronađena.",
+  "card.swipeHint": "Prevuci za ostale kartice",
 
   // results dashboard
   "results.noVotes": "Još nema glasova za ovu utakmicu.",
@@ -132,14 +143,24 @@ const en: Dict = {
   "common.sarajevoTime": "Sarajevo time",
   "common.localTime": "Local time",
 
+  // nav
+  "nav.home": "Home",
+  "nav.matches": "Matches",
+  "nav.results": "Results",
+  "nav.instagram": "Instagram",
+
   // landing
-  "landing.tagline": "━ How do BiH fans breathe? ━",
+  "landing.tagline": "How do BiH fans feel?",
   "landing.heroLead": "Enter your pulse, predict the score and join the biggest fan community",
   "landing.heroLeadStrong": "in the world.",
   "landing.ctaCreate": "Create your BiH Puls Card",
   "landing.ctaContinue": "Continue predicting",
   "landing.ctaViewResults": "View results",
   "landing.continueHint": "Predict the remaining matches",
+  "landing.howItWorks": "How does it work?",
+  "landing.step1": "Create your BiH Puls Card",
+  "landing.step2": "Predict Bosnia matches before kickoff",
+  "landing.step3": "Share your card and follow live fan results",
   "landing.annLeft": "Your pulse\nyour story",
   "landing.annRight": "Share and\nsupport the Dragons!",
   "landing.sectionActual": "★ Latest ★",
@@ -206,6 +227,7 @@ const en: Dict = {
   "card.shareFallback": "Download the card and post it to your Instagram Story.",
   "card.downloadError": "Download error. Please try again.",
   "card.notFound": "Card not found.",
+  "card.swipeHint": "Swipe for your other cards",
 
   // results dashboard
   "results.noVotes": "No votes yet for this match.",
@@ -226,9 +248,126 @@ const en: Dict = {
   "lb.noTips": "No predictions for this match.",
 };
 
-const DICTS: Record<Locale, Dict> = { bs, en };
+const de: Dict = {
+  // common
+  "common.back": "Zurück",
+  "common.home": "Start",
+  "common.next": "Weiter",
+  "common.soon": "Demnächst",
+  "common.allMatches": "Alle Spiele",
+  "common.viewResults": "Ergebnisse ansehen",
+  "common.sarajevoTime": "Sarajevo Zeit",
+  "common.localTime": "Ortszeit",
 
-export type TFn = (key: keyof typeof bs, vars?: Record<string, string | number>) => string;
+  // nav
+  "nav.home": "Start",
+  "nav.matches": "Spiele",
+  "nav.results": "Ergebnisse",
+  "nav.instagram": "Instagram",
+
+  // landing
+  "landing.tagline": "Wie fühlen die BiH-Fans?",
+  "landing.heroLead": "Gib deinen Puls ein, tippe das Ergebnis und werde Teil der größten Fan-Community",
+  "landing.heroLeadStrong": "der Welt.",
+  "landing.ctaCreate": "Erstelle deine BiH Puls Card",
+  "landing.ctaContinue": "Weiter tippen",
+  "landing.ctaViewResults": "Ergebnisse ansehen",
+  "landing.continueHint": "Tippe die restlichen Spiele",
+  "landing.howItWorks": "Wie funktioniert es?",
+  "landing.step1": "Erstelle deine BiH Puls Card",
+  "landing.step2": "Tippe die BiH-Spiele vor dem Anpfiff",
+  "landing.step3": "Teile deine Card und verfolge Live-Fan-Ergebnisse",
+  "landing.annLeft": "Dein Puls\ndeine Geschichte",
+  "landing.annRight": "Teilen und\ndie Drachen unterstützen!",
+  "landing.sectionActual": "★ Aktuell ★",
+  "landing.liveResults": "Live Ergebnisse",
+  "landing.instagram": "Folge uns auf Instagram",
+  "landing.samplePulsLabel": "Wir feiern schon",
+
+  // match status / chips
+  "status.create": "Puls Card erstellen",
+  "status.tip": "Spiel tippen",
+  "status.submitted": "Getippt",
+  "status.open": "Offen zum Tippen",
+  "status.live": "Live",
+  "status.finished": "Beendet",
+  "status.upcoming": "Demnächst",
+  "status.predictionClosed": "Tipp geschlossen",
+
+  // match detail
+  "match.alreadyPredicted": "Du hast dieses Spiel bereits getippt",
+  "match.viewCard": "Zeige deine BiH Puls Card",
+  "match.opponentTbd": "Der Gegner steht noch nicht fest. Das Tippen wird bald geöffnet.",
+  "match.predict": "Spiel tippen",
+  "match.create": "Erstelle deine BiH Puls Card",
+  "match.notFound": "Spiel nicht gefunden.",
+  "match.viewTable": "🏆 Drachen-Tabelle ansehen",
+  "match.liveResults": "Live Ergebnisse",
+
+  // create flow
+  "create.whoAreYou": "Wer bist du und woher feuerst du an?",
+  "create.nameLabel": "Name / Spitzname",
+  "create.namePlaceholder": "z. B. Amir",
+  "create.countryLabel": "Land",
+  "create.countryPlaceholder": "Land wählen…",
+  "create.cityLabel": "Stadt",
+  "create.predictScore": "Tippe das Ergebnis",
+  "create.predictingAs": "Du tippst als",
+  "create.yourPulse": "Wie ist dein Puls?",
+  "create.updatePulse": "Aktualisiere deinen Puls",
+  "create.enterNumber": "Zahl eingeben:",
+  "create.savePrediction": "Tipp speichern",
+  "create.createCard": "Puls Card erstellen",
+  "create.sending": "Senden…",
+  "create.savedTitle": "Tipp gespeichert",
+  "create.savedDesc": "Dein Tipp wurde gespeichert. Tippe weitere Spiele oder sieh dir die Ergebnisse an.",
+  "create.backHome": "Zurück zur Startseite",
+  "create.backToMatch": "Zurück zum Spiel",
+  "create.toastError": "Fehler beim Senden. Bitte versuche es erneut.",
+
+  // first-time (start) flow
+  "start.title": "Tippe alle Spiele",
+  "start.subtitle": "Gib für jedes offene Spiel einen Tipp ab. Alle teilen sich eine Puls Card.",
+  "start.noOpenMatches": "Aktuell gibt es keine offenen Spiele zum Tippen.",
+  "start.submitAll": "Puls Card erstellen",
+  "start.submitting": "Senden…",
+  "start.selectHint": "Schalte ein Spiel frei, um es zu tippen",
+  "start.matchesTitle": "Offene Spiele",
+
+  // card page
+  "card.ready": "★ Deine Puls Card ist fertig ★",
+  "card.download": "Card herunterladen",
+  "card.preparing": "Vorbereiten…",
+  "card.shareInsta": "Auf Instagram teilen",
+  "card.viewLive": "Live Ergebnisse ansehen",
+  "card.shareFallback": "Lade die Card herunter und poste sie in deiner Instagram Story.",
+  "card.downloadError": "Fehler beim Download. Bitte versuche es erneut.",
+  "card.notFound": "Card nicht gefunden.",
+  "card.swipeHint": "Wische für deine weiteren Cards",
+
+  // results dashboard
+  "results.noVotes": "Noch keine Stimmen für dieses Spiel.",
+  "results.globalPuls": "Globaler Puls der Drachen",
+  "results.byCountry": "Puls nach Ländern",
+  "results.topCities": "Top Städte",
+  "results.distribution": "Ergebnis-Tipp",
+  "results.bihWin": "BiH Sieg",
+  "results.draw": "Unentschieden",
+  "results.oppWin": "Sieg",
+  "results.voteOne": "Stimme",
+  "results.voteMany": "Stimmen",
+
+  // leaderboard
+  "lb.title": "🏆 Drachen-Tabelle",
+  "lb.scoring": "Exaktes Ergebnis = 3 Punkte · Richtiger Ausgang = 1 Punkt · Daneben = 0",
+  "lb.empty": "Die Tabelle wird berechnet, sobald Endergebnisse eingetragen sind.",
+  "lb.noTips": "Keine Tipps für dieses Spiel.",
+};
+
+const DICTS: Record<Locale, Dict> = { bs, en, de };
+
+export type TKey = keyof typeof bs;
+export type TFn = (key: TKey, vars?: Record<string, string | number>) => string;
 
 function translate(locale: Locale, key: string, vars?: Record<string, string | number>): string {
   const dict = DICTS[locale] ?? bs;
@@ -241,11 +380,15 @@ function translate(locale: Locale, key: string, vars?: Record<string, string | n
   return str;
 }
 
+function isLocale(v: unknown): v is Locale {
+  return v === "bs" || v === "en" || v === "de";
+}
+
 function readStoredLocale(): Locale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
   try {
     const v = localStorage.getItem(LOCALE_STORAGE_KEY);
-    return v === "en" || v === "bs" ? v : DEFAULT_LOCALE;
+    return isLocale(v) ? v : DEFAULT_LOCALE;
   } catch {
     return DEFAULT_LOCALE;
   }

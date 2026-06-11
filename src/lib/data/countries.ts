@@ -6,35 +6,37 @@ export interface Country {
   name: string;
   /** English display name. */
   nameEn: string;
+  /** German display name. */
+  nameDe: string;
   flag: string;
 }
 
 /** Countries supported in the submission flow. */
 export const COUNTRIES: Country[] = [
-  { code: "BA", name: "Bosna i Hercegovina", nameEn: "Bosnia and Herzegovina", flag: "🇧🇦" },
-  { code: "DE", name: "Njemačka", nameEn: "Germany", flag: "🇩🇪" },
-  { code: "AT", name: "Austrija", nameEn: "Austria", flag: "🇦🇹" },
-  { code: "CH", name: "Švicarska", nameEn: "Switzerland", flag: "🇨🇭" },
-  { code: "SE", name: "Švedska", nameEn: "Sweden", flag: "🇸🇪" },
-  { code: "NO", name: "Norveška", nameEn: "Norway", flag: "🇳🇴" },
-  { code: "DK", name: "Danska", nameEn: "Denmark", flag: "🇩🇰" },
-  { code: "NL", name: "Nizozemska", nameEn: "Netherlands", flag: "🇳🇱" },
-  { code: "BE", name: "Belgija", nameEn: "Belgium", flag: "🇧🇪" },
-  { code: "FR", name: "Francuska", nameEn: "France", flag: "🇫🇷" },
-  { code: "SI", name: "Slovenija", nameEn: "Slovenia", flag: "🇸🇮" },
-  { code: "HR", name: "Hrvatska", nameEn: "Croatia", flag: "🇭🇷" },
-  { code: "RS", name: "Srbija", nameEn: "Serbia", flag: "🇷🇸" },
-  { code: "ME", name: "Crna Gora", nameEn: "Montenegro", flag: "🇲🇪" },
-  { code: "TR", name: "Turska", nameEn: "Turkey", flag: "🇹🇷" },
-  { code: "US", name: "SAD", nameEn: "USA", flag: "🇺🇸" },
-  { code: "CA", name: "Kanada", nameEn: "Canada", flag: "🇨🇦" },
-  { code: "QA", name: "Katar", nameEn: "Qatar", flag: "🇶🇦" },
-  { code: "AU", name: "Australija", nameEn: "Australia", flag: "🇦🇺" },
-  { code: "GB", name: "Ujedinjeno Kraljevstvo", nameEn: "United Kingdom", flag: "🇬🇧" },
-  { code: "IT", name: "Italija", nameEn: "Italy", flag: "🇮🇹" },
-  { code: "ES", name: "Španija", nameEn: "Spain", flag: "🇪🇸" },
-  { code: "LU", name: "Luksemburg", nameEn: "Luxembourg", flag: "🇱🇺" },
-  { code: "XX", name: "Ostalo", nameEn: "Other", flag: "🌍" },
+  { code: "BA", name: "Bosna i Hercegovina", nameEn: "Bosnia and Herzegovina", nameDe: "Bosnien und Herzegowina", flag: "🇧🇦" },
+  { code: "DE", name: "Njemačka", nameEn: "Germany", nameDe: "Deutschland", flag: "🇩🇪" },
+  { code: "AT", name: "Austrija", nameEn: "Austria", nameDe: "Österreich", flag: "🇦🇹" },
+  { code: "CH", name: "Švicarska", nameEn: "Switzerland", nameDe: "Schweiz", flag: "🇨🇭" },
+  { code: "SE", name: "Švedska", nameEn: "Sweden", nameDe: "Schweden", flag: "🇸🇪" },
+  { code: "NO", name: "Norveška", nameEn: "Norway", nameDe: "Norwegen", flag: "🇳🇴" },
+  { code: "DK", name: "Danska", nameEn: "Denmark", nameDe: "Dänemark", flag: "🇩🇰" },
+  { code: "NL", name: "Nizozemska", nameEn: "Netherlands", nameDe: "Niederlande", flag: "🇳🇱" },
+  { code: "BE", name: "Belgija", nameEn: "Belgium", nameDe: "Belgien", flag: "🇧🇪" },
+  { code: "FR", name: "Francuska", nameEn: "France", nameDe: "Frankreich", flag: "🇫🇷" },
+  { code: "SI", name: "Slovenija", nameEn: "Slovenia", nameDe: "Slowenien", flag: "🇸🇮" },
+  { code: "HR", name: "Hrvatska", nameEn: "Croatia", nameDe: "Kroatien", flag: "🇭🇷" },
+  { code: "RS", name: "Srbija", nameEn: "Serbia", nameDe: "Serbien", flag: "🇷🇸" },
+  { code: "ME", name: "Crna Gora", nameEn: "Montenegro", nameDe: "Montenegro", flag: "🇲🇪" },
+  { code: "TR", name: "Turska", nameEn: "Turkey", nameDe: "Türkei", flag: "🇹🇷" },
+  { code: "US", name: "SAD", nameEn: "USA", nameDe: "USA", flag: "🇺🇸" },
+  { code: "CA", name: "Kanada", nameEn: "Canada", nameDe: "Kanada", flag: "🇨🇦" },
+  { code: "QA", name: "Katar", nameEn: "Qatar", nameDe: "Katar", flag: "🇶🇦" },
+  { code: "AU", name: "Australija", nameEn: "Australia", nameDe: "Australien", flag: "🇦🇺" },
+  { code: "GB", name: "Ujedinjeno Kraljevstvo", nameEn: "United Kingdom", nameDe: "Vereinigtes Königreich", flag: "🇬🇧" },
+  { code: "IT", name: "Italija", nameEn: "Italy", nameDe: "Italien", flag: "🇮🇹" },
+  { code: "ES", name: "Španija", nameEn: "Spain", nameDe: "Spanien", flag: "🇪🇸" },
+  { code: "LU", name: "Luksemburg", nameEn: "Luxembourg", nameDe: "Luxemburg", flag: "🇱🇺" },
+  { code: "XX", name: "Ostalo", nameEn: "Other", nameDe: "Andere", flag: "🌍" },
 ];
 
 export function countryByCode(code: string): Country | undefined {
@@ -49,7 +51,18 @@ export function countryByName(name: string): Country | undefined {
 export function countryDisplayName(name: string, locale: Locale): string {
   const c = countryByName(name);
   if (!c) return name;
-  return locale === "en" ? c.nameEn : c.name;
+  if (locale === "en") return c.nameEn;
+  if (locale === "de") return c.nameDe;
+  return c.name;
+}
+
+/** Localized name for a country by ISO code. */
+export function countryDisplayNameByCode(code: string, locale: Locale): string {
+  const c = countryByCode(code);
+  if (!c) return code;
+  if (locale === "en") return c.nameEn;
+  if (locale === "de") return c.nameDe;
+  return c.name;
 }
 
 /** Round/rectangular flag image URL (CORS-enabled) for high-quality card rendering. */

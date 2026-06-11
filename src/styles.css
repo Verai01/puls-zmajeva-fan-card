@@ -151,15 +151,15 @@
     repeating-linear-gradient(
       90deg,
       transparent 0,
+      transparent 15px,
+      oklch(0.84 0.17 90 / 9%) 15px,
+      oklch(0.84 0.17 90 / 9%) 16px,
       transparent 16px,
-      oklch(0.84 0.17 90 / 6%) 16px,
-      oklch(0.84 0.17 90 / 6%) 17px,
-      transparent 17px,
+      transparent 32px,
+      oklch(0.72 0.1 230 / 10%) 32px,
+      oklch(0.72 0.1 230 / 10%) 33px,
       transparent 33px,
-      oklch(0.7 0.1 230 / 7%) 33px,
-      oklch(0.7 0.1 230 / 7%) 34px,
-      transparent 34px,
-      transparent 50px
+      transparent 48px
     );
 }
 

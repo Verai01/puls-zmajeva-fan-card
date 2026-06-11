@@ -141,7 +141,7 @@ export const PulsCard = forwardRef<HTMLDivElement, PulsCardProps>(
               <div className="text-[3.6cqw] font-bold uppercase tracking-wide text-ice">
                 BiH vs {data.opponentName}
               </div>
-              <div className="rounded-[2cqw] border-[0.5cqw] border-primary/60 px-[6cqw] py-[1.5cqw] font-display text-[7.5cqw] leading-none text-foreground">
+              <div className="rounded-[2.5cqw] border-[0.5cqw] border-primary/70 bg-[oklch(0.14_0.09_266_/_75%)] px-[9cqw] py-[2.2cqw] font-display text-[9.5cqw] leading-none text-foreground shadow-[0_0.6cqw_2cqw_oklch(0_0_0_/_40%)]">
                 {data.bihScore} : {data.opponentScore}
               </div>
             </div>

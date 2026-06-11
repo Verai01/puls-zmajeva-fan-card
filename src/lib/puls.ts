@@ -5,14 +5,15 @@ export interface PulsCategory {
   max: number;
   label: string;
   labelEn: string;
+  labelDe: string;
 }
 
 export const PULS_CATEGORIES: PulsCategory[] = [
-  { min: 1, max: 20, label: "Slomljen, ali tu", labelEn: "Broken, but here" },
-  { min: 21, max: 40, label: "Nervozni Zmaj", labelEn: "Nervous Dragon" },
-  { min: 41, max: 60, label: "Realista", labelEn: "Realist" },
-  { min: 61, max: 80, label: "Vjernik", labelEn: "Believer" },
-  { min: 81, max: 100, label: "Već slavimo", labelEn: "Already celebrating" },
+  { min: 1, max: 20, label: "Slomljen, ali tu", labelEn: "Broken, but here", labelDe: "Gebrochen, aber dabei" },
+  { min: 21, max: 40, label: "Nervozni Zmaj", labelEn: "Nervous Dragon", labelDe: "Nervöser Drache" },
+  { min: 41, max: 60, label: "Realista", labelEn: "Realist", labelDe: "Realist" },
+  { min: 61, max: 80, label: "Vjernik", labelEn: "Believer", labelDe: "Gläubiger" },
+  { min: 81, max: 100, label: "Već slavimo", labelEn: "Already celebrating", labelDe: "Wir feiern schon" },
 ];
 
 /**
@@ -23,8 +24,14 @@ export const PULS_CATEGORIES: PulsCategory[] = [
 export function pulsLabel(value: number, locale: Locale = "bs"): string {
   const v = Math.max(1, Math.min(100, Math.round(value)));
   const cat = PULS_CATEGORIES.find((c) => v >= c.min && v <= c.max);
-  if (!cat) return locale === "en" ? "Realist" : "Realista";
-  return locale === "en" ? cat.labelEn : cat.label;
+  if (!cat) {
+    if (locale === "en") return "Realist";
+    if (locale === "de") return "Realist";
+    return "Realista";
+  }
+  if (locale === "en") return cat.labelEn;
+  if (locale === "de") return cat.labelDe;
+  return cat.label;
 }
 
 /** Index 0-4 of the puls category, used for card atmosphere variations. */
