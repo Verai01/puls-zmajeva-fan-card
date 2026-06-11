@@ -125,7 +125,7 @@ function BrandMark() {
 
 export function BrandHeader() {
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-primary/15 bg-[oklch(0.18_0.11_266_/_78%)] px-4 py-2.5 backdrop-blur-md">
+    <header className="sticky top-0 z-30 flex items-center justify-between gap-2 bg-gradient-to-b from-[oklch(0.2_0.12_266_/_55%)] to-transparent px-4 py-2.5 backdrop-blur-[6px]">
       <BrandMark />
       <div className="flex items-center gap-2.5">
         <LanguageSelector />

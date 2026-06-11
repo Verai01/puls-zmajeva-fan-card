@@ -11,7 +11,7 @@ import { BrandHeader } from "@/components/BrandHeader";
 import { ResultsDashboard } from "@/components/ResultsDashboard";
 import { BosniaRoundFlag, RoundFlag } from "@/components/RoundFlag";
 import { countryByName, countryDisplayName } from "@/lib/data/countries";
-import { formatSarajevo, localTimeValue } from "@/lib/format";
+import { formatMatchLocal } from "@/lib/format";
 import { useSubmittedId, useUserProfile } from "@/lib/device";
 import { useI18n } from "@/lib/i18n";
 
@@ -52,7 +52,6 @@ function MatchPage() {
   const submissionId = useSubmittedId(id);
   const profile = useUserProfile();
   const cardId = profile?.cardSubmissionId ?? submissionId;
-  const localLine = localTimeValue(match.local_time_label);
   const opponentLabel = countryDisplayName(match.opponent_name, locale);
 
   const statusBadge = !configured
@@ -94,16 +93,11 @@ function MatchPage() {
           ) : (
             <div className="mt-2">
               <div className="font-display text-lg text-foreground">
-                {formatSarajevo(match.kickoff_time)}
+                {formatMatchLocal(match.kickoff_time, opp?.code)}
               </div>
               <div className="text-xs text-muted-foreground">
-                {t("common.sarajevoTime")}
+                {t("common.localTime")}
               </div>
-              {localLine && (
-                <div className="mt-0.5 text-[11px] text-muted-foreground/80">
-                  {t("common.localTime")}: {localLine}
-                </div>
-              )}
             </div>
           )}
           <div className="mt-3 inline-block rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">

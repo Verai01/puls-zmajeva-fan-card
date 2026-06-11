@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import type { Match, Submission } from "@/lib/queries";
 import {
   averagePuls,
@@ -9,6 +10,7 @@ import { pulsLabel } from "@/lib/puls";
 import { countryByName, countryDisplayName } from "@/lib/data/countries";
 import { RoundFlag } from "@/components/RoundFlag";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 function Section({
   title,
@@ -59,11 +61,22 @@ function Bar({
   );
 }
 
-/** Horizontal snap carousel with paging dots. */
+/** Horizontal snap carousel with active-aware paging dots. */
 function Swiper({ count, children }: { count: number; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+
+  const handleScroll = () => {
+    const el = ref.current;
+    if (!el || el.clientWidth === 0) return;
+    setActive(Math.max(0, Math.min(count - 1, Math.round(el.scrollLeft / el.clientWidth))));
+  };
+
   return (
     <div>
       <div
+        ref={ref}
+        onScroll={handleScroll}
         className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ scrollPaddingInline: "0px" }}
       >
@@ -72,7 +85,14 @@ function Swiper({ count, children }: { count: number; children: React.ReactNode 
       {count > 1 && (
         <div className="mt-1 flex justify-center gap-1.5">
           {Array.from({ length: count }).map((_, i) => (
-            <span key={i} className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
+            <span
+              key={i}
+              aria-current={i === active ? "true" : undefined}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                i === active ? "w-4 bg-primary" : "w-1.5 bg-foreground/25",
+              )}
+            />
           ))}
         </div>
       )}

@@ -318,7 +318,7 @@ function CreatePage() {
                 <option value="">{t("create.countryPlaceholder")}</option>
                 {COUNTRIES.map((c) => (
                   <option key={c.code} value={c.name}>
-                    {c.flag} {locale === "en" ? c.nameEn : c.name}
+                    {c.flag} {countryDisplayName(c.name, locale)}
                   </option>
                 ))}
               </select>

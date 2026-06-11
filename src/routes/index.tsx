@@ -100,8 +100,6 @@ function Index() {
   const { t, locale } = useI18n();
   const { cards: userCards } = useUserCards(locale);
 
-  const tippable = matches.filter((m) => getMatchAvailability(m).canPredict);
-  const remaining = tippable.filter((m) => !submitted[m.id]);
   const hasProfile = !!profile;
 
   const liveMatch = pickLiveMatch(matches, submitted);
@@ -114,26 +112,22 @@ function Index() {
     submissionsQuery(submissionsMatchId),
   );
 
-  const scrollToLiveResults = () => {
-    document.getElementById("live-results")?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Every fan must predict all 3 matches up front, so there is no
+  // "continue predicting" path: either start the flow or view your card.
   const handlePrimaryCta = () => {
     if (!hasProfile) {
       navigate({ to: "/start" });
       return;
     }
-    if (remaining.length === 0) {
-      scrollToLiveResults();
-      return;
+    if (profile?.cardSubmissionId) {
+      navigate({
+        to: "/card/$submissionId",
+        params: { submissionId: profile.cardSubmissionId },
+      });
     }
-    const target = remaining[0];
-    if (target) navigate({ to: "/match/$id", params: { id: target.id } });
   };
 
-  let ctaLabel = t("landing.ctaCreate");
-  if (hasProfile && remaining.length > 0) ctaLabel = t("landing.ctaContinue");
-  if (hasProfile && remaining.length === 0) ctaLabel = t("landing.ctaViewResults");
+  const ctaLabel = hasProfile ? t("landing.ctaViewCard") : t("landing.ctaCreate");
 
   const showUserCards = hasProfile && userCards.length > 0;
 
@@ -178,12 +172,6 @@ function Index() {
             <ArrowRight className="h-5 w-5" strokeWidth={3} />
           </button>
 
-          {hasProfile && remaining.length > 0 && (
-            <p className="mt-2 text-sm font-semibold text-ice">
-              {t("landing.continueHint")}
-            </p>
-          )}
-
           <HowItWorks t={t} />
         </section>
 
@@ -212,16 +200,16 @@ function Index() {
             </svg>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[260px]">
+          <div className="relative mx-auto w-full max-w-[260px] [perspective:1100px]">
             {showUserCards ? (
               <PulsCardCarousel
                 cards={userCards.map((c) => c.data)}
                 tilt
-                cardMaxWidthClass="max-w-[200px]"
+                cardMaxWidthClass="max-w-[210px]"
               />
             ) : (
-              <div className="flex justify-center px-2 py-3">
-                <div className="w-full max-w-[200px] rotate-[-4deg] drop-shadow-[0_18px_40px_oklch(0_0_0_/_55%)]">
+              <div className="flex justify-center px-2 py-6">
+                <div className="animate-card-float w-full max-w-[210px] drop-shadow-[0_26px_50px_oklch(0_0_0_/_55%)]">
                   <PulsCard data={sampleCard} />
                 </div>
               </div>

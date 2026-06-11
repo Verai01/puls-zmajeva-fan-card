@@ -3,7 +3,7 @@ import { Clock } from "lucide-react";
 import type { Match } from "@/lib/queries";
 import { getMatchAvailability } from "@/lib/queries";
 import { countryByName, countryDisplayName } from "@/lib/data/countries";
-import { formatSarajevo, localTimeValue } from "@/lib/format";
+import { formatMatchLocal } from "@/lib/format";
 import { BosniaRoundFlag, RoundFlag } from "@/components/RoundFlag";
 import { useI18n, type TKey } from "@/lib/i18n";
 
@@ -57,7 +57,6 @@ export function MatchCard({
   const { t, locale } = useI18n();
   const { configured, phase, hasFinal, canPredict } = getMatchAvailability(match);
   const opp = countryByName(match.opponent_name);
-  const localLine = localTimeValue(match.local_time_label);
   const opponentLabel = configured
     ? countryDisplayName(match.opponent_name, locale)
     : t("common.soon");
@@ -112,11 +111,10 @@ export function MatchCard({
         <span className="min-w-0">
           <span className="flex items-center gap-1.5 text-xs font-bold text-foreground/90">
             <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
-            <span className="truncate">{formatSarajevo(match.kickoff_time)}</span>
+            <span className="truncate">{formatMatchLocal(match.kickoff_time, opp?.code)}</span>
           </span>
           <span className="mt-0.5 block pl-5 text-[10px] uppercase tracking-wide text-muted-foreground">
-            {t("common.sarajevoTime")}
-            {localLine ? ` · ${t("common.localTime")}: ${localLine}` : ""}
+            {t("common.localTime")}
           </span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-1">

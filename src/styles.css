@@ -232,3 +232,27 @@
 @utility animate-rise {
   animation: rise-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
+
+/* Gentle premium 3D float for the showpiece Puls Card. */
+@keyframes card-float {
+  0%,
+  100% {
+    transform: translateY(0) rotateZ(-4deg) rotateY(4deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateZ(-2deg) rotateY(-3deg);
+  }
+}
+
+@utility animate-card-float {
+  animation: card-float 6.5s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-float {
+    animation: none;
+    transform: rotateZ(-4deg);
+  }
+}

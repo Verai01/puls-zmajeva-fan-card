@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { toPng, toBlob } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { ArrowLeft, Download, BarChart3, Share2 } from "lucide-react";
 import { submissionQuery, matchQuery, submissionsQuery } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
-import { PulsCard, type PulsCardData } from "@/components/PulsCard";
+import { PulsCard, BOSNIA_FLAG_URL, type PulsCardData } from "@/components/PulsCard";
 import { PulsCardCarousel } from "@/components/PulsCardCarousel";
 import { localFlagUrl } from "@/components/RoundFlag";
 import { countryByName, countryDisplayName, flagUrl } from "@/lib/data/countries";
@@ -41,11 +41,14 @@ export const Route = createFileRoute("/card/$submissionId")({
   ),
 });
 
+// Real 9:16 Instagram Story export — exactly 1080x1920, high-quality JPG.
 const EXPORT_OPTS = {
-  pixelRatio: 2,
+  quality: 0.95,
   width: 1080,
   height: 1920,
+  pixelRatio: 1,
   cacheBust: true,
+  backgroundColor: "#0a0e1f",
 } as const;
 
 function preloadImage(src: string): Promise<void> {
@@ -58,9 +61,15 @@ function preloadImage(src: string): Promise<void> {
   });
 }
 
-async function preloadCardAssets(flagUrlValue: string | null | undefined) {
-  const urls = [dragonLogo, flagUrlValue].filter(Boolean) as string[];
-  await Promise.all(urls.map(preloadImage));
+async function preloadCardAssets() {
+  await Promise.all([dragonLogo, BOSNIA_FLAG_URL].map(preloadImage));
+}
+
+function triggerDownload(dataUrl: string, fileName: string) {
+  const link = document.createElement("a");
+  link.download = fileName;
+  link.href = dataUrl;
+  link.click();
 }
 
 function CardPage() {
@@ -97,23 +106,19 @@ function CardPage() {
   }, [userCards, submissionId]);
 
   const exportCard = cards[active] ?? currentCard;
-  const fileName = `bih-puls-card-${exportCard.name.toLowerCase().replace(/\s+/g, "-")}.png`;
+  const fileName = `puls-zmajeva-card-${exportCard.name.toLowerCase().replace(/\s+/g, "-") || "bih"}.jpg`;
 
-  const captureCard = async () => {
+  const renderJpeg = async (): Promise<string> => {
     if (!exportRef.current) throw new Error("Card not ready");
-    await preloadCardAssets(exportCard.countryFlagUrl);
-    return exportRef.current;
+    await preloadCardAssets();
+    return toJpeg(exportRef.current, EXPORT_OPTS);
   };
 
   const handleDownload = async () => {
     setBusy("download");
     try {
-      const node = await captureCard();
-      const dataUrl = await toPng(node, EXPORT_OPTS);
-      const link = document.createElement("a");
-      link.download = fileName;
-      link.href = dataUrl;
-      link.click();
+      const dataUrl = await renderJpeg();
+      triggerDownload(dataUrl, fileName);
     } catch {
       toast.error(t("card.downloadError"));
     } finally {
@@ -124,23 +129,25 @@ function CardPage() {
   const handleShare = async () => {
     setBusy("share");
     try {
-      const node = await captureCard();
-      const blob = await toBlob(node, EXPORT_OPTS);
-      const file = blob ? new File([blob], fileName, { type: "image/png" }) : null;
+      const dataUrl = await renderJpeg();
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], fileName, { type: "image/jpeg" });
       const nav = navigator as Navigator & {
         canShare?: (d: ShareData) => boolean;
       };
-      if (file && nav.canShare?.({ files: [file] })) {
+      if (nav.canShare?.({ files: [file] }) && typeof nav.share === "function") {
         await nav.share({
           files: [file],
           title: "Puls Zmajeva",
           text: "Moja BiH Puls Card 🐉 #DREAMBIG #DREAMBIH",
         });
       } else {
+        // No native file share — save the JPG and tell the user to post it.
+        triggerDownload(dataUrl, fileName);
         toast(t("card.shareFallback"));
       }
     } catch {
-      /* user cancelled share */
+      /* user cancelled the native share sheet */
     } finally {
       setBusy("none");
     }

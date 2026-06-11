@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Check, BarChart3, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, BarChart3 } from "lucide-react";
 import {
   matchesQuery,
   createSubmission,
@@ -17,7 +17,7 @@ import { BosniaRoundFlag, RoundFlag } from "@/components/RoundFlag";
 import { COUNTRIES, countryByName, countryDisplayName } from "@/lib/data/countries";
 import { pulsLabel } from "@/lib/puls";
 import { normalizeCity } from "@/lib/normalize";
-import { formatSarajevo } from "@/lib/format";
+import { formatMatchLocal } from "@/lib/format";
 import {
   getSubmittedId,
   setSubmittedId,
@@ -42,6 +42,7 @@ function StepDots({ step, total }: { step: number; total: number }) {
         return (
           <span
             key={s}
+            aria-current={s === step ? "step" : undefined}
             className={`h-2 rounded-full transition-all ${
               s === step ? "w-8 bg-primary" : "w-2 bg-foreground/30"
             }`}
@@ -55,7 +56,6 @@ function StepDots({ step, total }: { step: number; total: number }) {
 interface MatchEntry {
   bih: number;
   opp: number;
-  include: boolean;
 }
 
 function StartPage() {
@@ -66,12 +66,12 @@ function StartPage() {
   const submitted = useSubmittedMatches();
   const { t, locale } = useI18n();
 
-  // First-time flow only — returning users already have a card.
+  // First-time flow only — returning users already have their cards.
   useEffect(() => {
     if (profile) navigate({ to: "/", replace: true });
   }, [profile, navigate]);
 
-  // Matches that are open right now and not yet submitted on this device.
+  // Every open, not-yet-submitted Bosnia match — all are mandatory.
   const available = useMemo<Match[]>(
     () =>
       matches.filter(
@@ -92,18 +92,15 @@ function StartPage() {
   const storedLabel = pulsLabel(puls);
   const label = pulsLabel(puls, locale);
 
-  const entryFor = (id: string): MatchEntry =>
-    entries[id] ?? { bih: 1, opp: 0, include: true };
-
+  const entryFor = (id: string): MatchEntry => entries[id] ?? { bih: 1, opp: 0 };
   const updateEntry = (id: string, patch: Partial<MatchEntry>) =>
     setEntries((prev) => ({ ...prev, [id]: { ...entryFor(id), ...patch } }));
 
-  const includedCount = available.filter((m) => entryFor(m.id).include).length;
-  const canNext1 = name.trim().length >= 2 && !!countryName && city.trim().length >= 1;
+  const canSubmitProfile =
+    name.trim().length >= 2 && !!countryName && city.trim().length >= 1;
 
   const handleSubmitAll = async () => {
-    const included = available.filter((m) => entryFor(m.id).include);
-    if (included.length === 0 || submitting) return;
+    if (available.length === 0 || submitting || !canSubmitProfile) return;
     setSubmitting(true);
 
     const identity = {
@@ -115,7 +112,7 @@ function StartPage() {
 
     try {
       const created = [];
-      for (const m of included) {
+      for (const m of available) {
         const e = entryFor(m.id);
         const sub = await createSubmission({
           match_id: m.id,
@@ -132,7 +129,7 @@ function StartPage() {
         setSubmittedId(m.id, sub.id);
       }
 
-      // First created submission becomes the shareable card.
+      // First created submission is the shareable main card id.
       const cardId = created[0].id;
       setUserProfile({
         name: identity.name,
@@ -146,7 +143,7 @@ function StartPage() {
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["matches"] }),
-        ...included.map((m) =>
+        ...available.map((m) =>
           queryClient.invalidateQueries({ queryKey: ["submissions", m.id] }),
         ),
       ]);
@@ -199,10 +196,57 @@ function StartPage() {
         >
           <ArrowLeft className="h-4 w-4" /> {t("common.back")}
         </button>
-        <StepDots step={step} total={3} />
+        <StepDots step={step} total={2} />
 
+        {/* Step 1 — predict all matches (mandatory) */}
         {step === 1 && (
           <section className="animate-rise flex flex-col gap-4">
+            <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
+              {t("start.title")}
+            </h2>
+            <p className="text-sm text-foreground/80">{t("start.subtitle")}</p>
+
+            {available.map((m) => {
+              const opp = countryByName(m.opponent_name);
+              const opponentLabel = countryDisplayName(m.opponent_name, locale);
+              const e = entryFor(m.id);
+              return (
+                <div key={m.id} className="glass-card flex flex-col gap-3 rounded-2xl p-4">
+                  <div className="flex min-w-0 items-center gap-2 font-display text-xl">
+                    <BosniaRoundFlag size="sm" />
+                    <span className="text-foreground">BiH</span>
+                    <span className="text-sm text-muted-foreground">VS</span>
+                    <RoundFlag code={opp?.code} size="sm" alt={opponentLabel} />
+                    <span className="truncate text-foreground">{opponentLabel}</span>
+                  </div>
+                  <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    {formatMatchLocal(m.kickoff_time, opp?.code)} · {t("common.localTime")}
+                  </div>
+                  <Scoreboard
+                    opponentName={opponentLabel}
+                    opponentCode={opp?.code}
+                    bihScore={e.bih}
+                    opponentScore={e.opp}
+                    onChange={(side, v) =>
+                      updateEntry(m.id, side === "bih" ? { bih: v } : { opp: v })
+                    }
+                  />
+                </div>
+              );
+            })}
+
+            <button
+              onClick={() => setStep(2)}
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary-foreground gold-glow"
+            >
+              {t("common.next")} <ArrowRight className="h-5 w-5" strokeWidth={3} />
+            </button>
+          </section>
+        )}
+
+        {/* Step 2 — identity + puls */}
+        {step === 2 && (
+          <section className="animate-rise flex flex-col gap-5">
             <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
               {t("create.whoAreYou")}
             </h2>
@@ -233,7 +277,7 @@ function StartPage() {
                 <option value="">{t("create.countryPlaceholder")}</option>
                 {COUNTRIES.map((c) => (
                   <option key={c.code} value={c.name}>
-                    {c.flag} {locale === "en" ? c.nameEn : c.name}
+                    {c.flag} {countryDisplayName(c.name, locale)}
                   </option>
                 ))}
               </select>
@@ -248,22 +292,11 @@ function StartPage() {
                 onChange={setCity}
               />
             </label>
-            <button
-              disabled={!canNext1}
-              onClick={() => setStep(2)}
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary-foreground gold-glow disabled:opacity-40"
-            >
-              {t("common.next")} <ArrowRight className="h-5 w-5" strokeWidth={3} />
-            </button>
-          </section>
-        )}
 
-        {step === 2 && (
-          <section className="animate-rise flex flex-col gap-5">
-            <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
-              {t("create.yourPulse")}
-            </h2>
             <div className="glass-card rounded-2xl p-5">
+              <h3 className="mb-4 text-center font-display text-lg uppercase tracking-wide text-primary">
+                {t("create.yourPulse")}
+              </h3>
               <div className="mb-5 text-center">
                 <div className="font-display text-6xl leading-none text-primary">
                   {puls}
@@ -291,69 +324,9 @@ function StartPage() {
                 />
               </div>
             </div>
-            <button
-              onClick={() => setStep(3)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary-foreground gold-glow"
-            >
-              {t("common.next")} <ArrowRight className="h-5 w-5" strokeWidth={3} />
-            </button>
-          </section>
-        )}
-
-        {step === 3 && (
-          <section className="animate-rise flex flex-col gap-4">
-            <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
-              {t("start.matchesTitle")}
-            </h2>
-            <p className="text-sm text-foreground/80">{t("start.subtitle")}</p>
-
-            {available.map((m) => {
-              const opp = countryByName(m.opponent_name);
-              const opponentLabel = countryDisplayName(m.opponent_name, locale);
-              const e = entryFor(m.id);
-              return (
-                <div key={m.id} className="glass-card flex flex-col gap-3 rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2 font-display text-xl">
-                      <BosniaRoundFlag size="sm" />
-                      <span className="text-foreground">BiH</span>
-                      <span className="text-sm text-muted-foreground">VS</span>
-                      <RoundFlag code={opp?.code} size="sm" alt={opponentLabel} />
-                      <span className="truncate text-foreground">{opponentLabel}</span>
-                    </div>
-                    <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-ice">
-                      <input
-                        type="checkbox"
-                        checked={e.include}
-                        onChange={(ev) => updateEntry(m.id, { include: ev.target.checked })}
-                        className="h-4 w-4 accent-[var(--gold)]"
-                      />
-                    </label>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {formatSarajevo(m.kickoff_time)} · {t("common.sarajevoTime")}
-                  </div>
-                  {e.include ? (
-                    <Scoreboard
-                      opponentName={opponentLabel}
-                      opponentCode={opp?.code}
-                      bihScore={e.bih}
-                      opponentScore={e.opp}
-                      onChange={(side, v) =>
-                        updateEntry(m.id, side === "bih" ? { bih: v } : { opp: v })
-                      }
-                    />
-                  ) : (
-                    <p className="flex items-center gap-1.5 rounded-xl bg-[oklch(0.16_0.1_266)] px-3 py-2 text-xs text-muted-foreground">
-                      <Lock className="h-3.5 w-3.5" /> {t("start.selectHint")}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
 
             <button
-              disabled={submitting || includedCount === 0}
+              disabled={submitting || !canSubmitProfile}
               onClick={handleSubmitAll}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground gold-glow disabled:opacity-50"
             >

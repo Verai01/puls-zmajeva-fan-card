@@ -60,7 +60,6 @@ export function PulsCardCarousel({
   if (cards.length === 0) return null;
 
   const single = cards.length === 1;
-  const tiltClass = tilt ? "rotate-[-4deg]" : "";
 
   return (
     <div className={cn("flex flex-col items-center gap-3", className)}>
@@ -69,6 +68,7 @@ export function PulsCardCarousel({
         onScroll={handleScroll}
         className={cn(
           "flex w-full",
+          tilt && "[perspective:1100px]",
           single
             ? "justify-center"
             : "snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
@@ -78,15 +78,15 @@ export function PulsCardCarousel({
           <div
             key={i}
             className={cn(
-              "flex shrink-0 snap-center items-center justify-center px-2 py-3",
+              "flex shrink-0 snap-center items-center justify-center px-2 py-6",
               single ? "w-auto" : "w-full",
             )}
           >
             <div
               className={cn(
-                "w-full drop-shadow-[0_18px_40px_oklch(0_0_0_/_55%)] transition-transform",
+                "w-full drop-shadow-[0_26px_50px_oklch(0_0_0_/_55%)]",
                 cardMaxWidthClass,
-                tiltClass,
+                tilt ? "animate-card-float" : "transition-transform",
               )}
             >
               <PulsCard data={card} />
@@ -101,7 +101,8 @@ export function PulsCardCarousel({
             <button
               key={i}
               type="button"
-              aria-label={`Card ${i + 1}`}
+              aria-label={`Puls Card ${i + 1}`}
+              aria-current={i === active ? "true" : undefined}
               onClick={() => scrollTo(i)}
               className={cn(
                 "h-2 rounded-full transition-all",
