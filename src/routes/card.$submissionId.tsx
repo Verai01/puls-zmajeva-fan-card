@@ -13,7 +13,6 @@ import { countryByName, countryDisplayName, flagUrl } from "@/lib/data/countries
 import { pulsLabel } from "@/lib/puls";
 import { useUserCards } from "@/lib/useUserCards";
 import { useI18n } from "@/lib/i18n";
-import dragonLogo from "@/assets/dragon-logo.png";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/card/$submissionId")({
@@ -62,7 +61,7 @@ function preloadImage(src: string): Promise<void> {
 }
 
 async function preloadCardAssets() {
-  await Promise.all([dragonLogo, BOSNIA_FLAG_URL].map(preloadImage));
+  await Promise.all([BOSNIA_FLAG_URL].map(preloadImage));
 }
 
 function triggerDownload(dataUrl: string, fileName: string) {
@@ -219,7 +218,7 @@ function CardPage() {
             overflow: "visible",
           }}
         >
-          <PulsCard ref={exportRef} data={exportCard} className="h-[1920px] w-[1080px]" />
+          <PulsCard ref={exportRef} data={exportCard} fullBleed className="h-[1920px] w-[1080px]" />
         </div>
       </main>
     </AppShell>

@@ -15,7 +15,6 @@ import { PulsCard, type PulsCardData } from "@/components/PulsCard";
 import { PulsCardCarousel } from "@/components/PulsCardCarousel";
 import { MatchCard } from "@/components/MatchCard";
 import { ResultsDashboard } from "@/components/ResultsDashboard";
-import { localFlagUrl } from "@/components/RoundFlag";
 import { useSubmittedMatches, useUserProfile } from "@/lib/device";
 import { useUserCards } from "@/lib/useUserCards";
 import { countryDisplayName } from "@/lib/data/countries";
@@ -30,7 +29,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Tipuj rezultat, unesi svoj puls od 1 do 100 i napravi svoju BiH Puls Card za Instagram Story.",
+          "Prognoziraj rezultat, unesi svoj puls od 1 do 100 i napravi svoju BiH Puls Card za Instagram Story.",
       },
       { property: "og:title", content: "Puls Zmajeva — Kako dišu navijači BiH?" },
     ],
@@ -131,18 +130,41 @@ function Index() {
 
   const showUserCards = hasProfile && userCards.length > 0;
 
-  const sampleCard: PulsCardData = {
-    name: "AMIR",
-    cityDisplay: "Malmö",
-    countryFlag: "🇸🇪",
-    countryFlagUrl: localFlagUrl("SE"),
-    countryName: countryDisplayName("Švedska", locale),
-    opponentName: countryDisplayName("Švicarska", locale),
-    bihScore: 2,
-    opponentScore: 1,
-    pulsValue: 88,
-    pulsLabel: pulsLabel(88, locale),
-  };
+  // Three distinct demo fans shown in the hero carousel for new/visitor
+  // sessions, so the landing page feels like a real community (never the same
+  // card three times). Localised via the active locale.
+  const demoCards: PulsCardData[] = [
+    {
+      name: "ELMIN",
+      cityDisplay: "Antwerpen",
+      countryName: countryDisplayName("Belgija", locale),
+      opponentName: countryDisplayName("Kanada", locale),
+      bihScore: 2,
+      opponentScore: 1,
+      pulsValue: 91,
+      pulsLabel: pulsLabel(91, locale),
+    },
+    {
+      name: "AMAR",
+      cityDisplay: "Malmö",
+      countryName: countryDisplayName("Švedska", locale),
+      opponentName: countryDisplayName("Švicarska", locale),
+      bihScore: 1,
+      opponentScore: 1,
+      pulsValue: 74,
+      pulsLabel: pulsLabel(74, locale),
+    },
+    {
+      name: "HARIS",
+      cityDisplay: "Linz",
+      countryName: countryDisplayName("Austrija", locale),
+      opponentName: countryDisplayName("Katar", locale),
+      bihScore: 3,
+      opponentScore: 1,
+      pulsValue: 88,
+      pulsLabel: pulsLabel(88, locale),
+    },
+  ];
 
   return (
     <AppShell>
@@ -151,9 +173,13 @@ function Index() {
       <main className="flex flex-col gap-8 px-5 pb-16 pt-7">
         {/* Hero */}
         <section className="text-center">
-          <h1 className="font-display text-[2.4rem] leading-[1.02] uppercase tracking-tight text-stroke-royal">
-            <span className="text-foreground">{t("landing.heroLine1")}</span>{" "}
-            <span className="text-primary">{t("landing.heroLine2")}</span>
+          <h1 className="font-display text-[2.6rem] leading-[0.98] uppercase tracking-tight text-stroke-royal">
+            <span className="block whitespace-nowrap text-foreground">
+              {t("landing.heroLine1")}
+            </span>
+            <span className="block whitespace-nowrap text-primary">
+              {t("landing.heroLine2")}
+            </span>
           </h1>
           <p className="mx-auto mt-4 max-w-xs text-base text-foreground/85">
             {t("landing.heroLead")}{" "}
@@ -176,7 +202,7 @@ function Index() {
           {/* radial glow behind the card */}
           <span className="pointer-events-none absolute left-1/2 top-1/2 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/12 blur-3xl" />
 
-          <div className="pointer-events-none absolute left-1.5 top-4 z-20 max-w-[82px] -rotate-6 text-left">
+          <div className="pointer-events-none absolute left-5 top-20 z-20 max-w-[82px] -rotate-6 text-left">
             <p className="whitespace-pre-line font-hand text-xl font-bold leading-[0.95] text-ice drop-shadow">
               {t("landing.annLeft")}
             </p>
@@ -186,7 +212,7 @@ function Index() {
             </svg>
           </div>
 
-          <div className="pointer-events-none absolute bottom-8 right-1.5 z-20 max-w-[84px] rotate-6 text-right">
+          <div className="pointer-events-none absolute bottom-24 right-5 z-20 max-w-[84px] rotate-6 text-right">
             <p className="whitespace-pre-line font-hand text-xl font-bold leading-[0.95] text-primary drop-shadow">
               {t("landing.annRight")}
             </p>
@@ -196,20 +222,12 @@ function Index() {
             </svg>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[260px] [perspective:1100px]">
-            {showUserCards ? (
-              <PulsCardCarousel
-                cards={userCards.map((c) => c.data)}
-                tilt
-                cardMaxWidthClass="max-w-[210px]"
-              />
-            ) : (
-              <div className="flex justify-center px-2 py-6">
-                <div className="animate-card-float w-full max-w-[210px] drop-shadow-[0_26px_50px_oklch(0_0_0_/_55%)]">
-                  <PulsCard data={sampleCard} />
-                </div>
-              </div>
-            )}
+          <div className="relative mx-auto w-full max-w-[260px]">
+            <PulsCardCarousel
+              cards={showUserCards ? userCards.map((c) => c.data) : demoCards}
+              tilt
+              cardMaxWidthClass="max-w-[210px]"
+            />
           </div>
         </section>
 

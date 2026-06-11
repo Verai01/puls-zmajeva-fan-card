@@ -84,7 +84,7 @@ export function PulsCardCarousel({
           >
             <div
               className={cn(
-                "w-full drop-shadow-[0_26px_50px_oklch(0_0_0_/_55%)]",
+                "w-full drop-shadow-[0_10px_22px_oklch(0.12_0.06_266_/_42%)]",
                 cardMaxWidthClass,
                 tilt ? "animate-card-float" : "transition-transform",
               )}

@@ -87,7 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Tipuj rezultat, unesi svoj puls i napravi svoju BiH Puls Card. Najveća navijačka zajednica BiH na svijetu.",
+          "Prognoziraj rezultat, unesi svoj puls i napravi svoju BiH Puls Card. Najveća navijačka zajednica BiH na svijetu.",
       },
       { name: "author", content: "Puls Zmajeva" },
       { name: "theme-color", content: "#143ba0" },
@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Tipuj rezultat, unesi svoj puls i napravi svoju BiH Puls Card.",
+          "Prognoziraj rezultat, unesi svoj puls i napravi svoju BiH Puls Card.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

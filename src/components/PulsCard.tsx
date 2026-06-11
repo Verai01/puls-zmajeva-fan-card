@@ -2,7 +2,6 @@ import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { pulsCategoryIndex } from "@/lib/puls";
 import { localFlagUrl } from "@/components/RoundFlag";
-import dragonLogo from "@/assets/dragon-logo.png";
 
 export interface PulsCardData {
   name: string;
@@ -22,6 +21,13 @@ export interface PulsCardData {
 interface PulsCardProps {
   data: PulsCardData;
   className?: string;
+  /**
+   * Export variant: renders the card edge-to-edge with square corners so the
+   * exported JPG is filled completely (no rounded-corner reveal, no rectangular
+   * background behind the card). Preview/hero/carousel keep rounded corners and
+   * a transparent area outside the card so it floats on the page background.
+   */
+  fullBleed?: boolean;
 }
 
 /** The card always shows the round Bosnia flag (no opponent/country flag). */
@@ -87,20 +93,29 @@ function BosniaWatermark() {
  * 1080px for the 9:16 export JPG.
  */
 export const PulsCard = forwardRef<HTMLDivElement, PulsCardProps>(
-  ({ data, className }, ref) => {
+  ({ data, className, fullBleed = false }, ref) => {
     const idx = pulsCategoryIndex(data.pulsValue);
     const pulsValue = Math.max(1, Math.min(100, Math.round(data.pulsValue)));
 
     return (
+      // Outer container: positioning / rotation / animation ONLY. It has no
+      // visible background, so nothing rectangular ever shows behind the card.
       <div
         ref={ref}
         className={cn("relative aspect-[9/16] w-full text-center", className)}
         style={{ containerType: "inline-size" }}
       >
-        {/* The rounded element carries the background so corners never reveal a
-            dark rectangle behind the card. */}
+        {/* The actual card surface carries every visible style. It owns the
+            background + rounded corners, so the card visually ends exactly at
+            its (gold) edge — everything outside is transparent (page bg). The
+            export variant uses square corners to fill the JPG edge-to-edge. */}
         <div
-          className="relative h-full w-full overflow-hidden rounded-[8cqw]"
+          className={cn(
+            "relative h-full w-full overflow-hidden",
+            fullBleed
+              ? "rounded-none"
+              : "rounded-[8cqw] border-[0.5cqw] border-primary/70",
+          )}
           style={{ background: CARD_BG[idx] }}
         >
           {/* vertical ton-in-ton fabric panels */}
@@ -138,15 +153,6 @@ export const PulsCard = forwardRef<HTMLDivElement, PulsCardProps>(
 
           {/* transparent Bosnia watermark on the top half */}
           <BosniaWatermark />
-
-          {/* abstract Zmaj/dragon watermark */}
-          <img
-            src={dragonLogo}
-            alt=""
-            aria-hidden
-            crossOrigin="anonymous"
-            className="pointer-events-none absolute left-1/2 top-[44cqw] h-[64cqw] w-[64cqw] -translate-x-1/2 object-contain opacity-[0.045]"
-          />
 
           {/* soft warm glow near the bottom (keeps the lower area blue, not black) */}
           <div
@@ -219,14 +225,13 @@ export const PulsCard = forwardRef<HTMLDivElement, PulsCardProps>(
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-[1.2cqw]">
-              <img
-                src={dragonLogo}
-                alt="Zmaj"
-                crossOrigin="anonymous"
-                className="h-[14cqw] w-[14cqw] object-contain drop-shadow-[0_0.6cqw_2cqw_oklch(0.84_0.17_90_/_60%)]"
-              />
-              <div className="text-[3.2cqw] font-bold uppercase tracking-[0.2em] text-foreground/70">
+            <div className="flex flex-col items-center gap-[1.4cqw]">
+              {/* text-only brand logo — same style as the header (no icon) */}
+              <div className="font-display text-[7cqw] leading-none tracking-[0.04em]">
+                <span className="text-foreground">Puls </span>
+                <span className="text-primary">Zmajeva</span>
+              </div>
+              <div className="text-[3.2cqw] font-bold uppercase tracking-[0.2em] text-foreground/65">
                 pulszmajeva.com
               </div>
             </div>
