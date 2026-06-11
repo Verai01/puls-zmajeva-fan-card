@@ -7,7 +7,10 @@ import { submissionQuery, matchQuery, submissionsQuery } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
 import { PulsCard, type PulsCardData } from "@/components/PulsCard";
-import { countryByName, flagUrl } from "@/lib/data/countries";
+import { localFlagUrl } from "@/components/RoundFlag";
+import { countryByName, countryDisplayName, flagUrl } from "@/lib/data/countries";
+import { pulsLabel } from "@/lib/puls";
+import { useI18n } from "@/lib/i18n";
 import dragonLogo from "@/assets/dragon-logo.png";
 import { toast } from "sonner";
 
@@ -63,6 +66,7 @@ function CardPage() {
   const { data: sub } = useSuspenseQuery(submissionQuery(submissionId));
   const { data: match } = useSuspenseQuery(matchQuery(sub.match_id));
   useSuspenseQuery(submissionsQuery(sub.match_id));
+  const { t, locale } = useI18n();
   const exportRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<"none" | "download" | "share">("none");
 
@@ -71,13 +75,13 @@ function CardPage() {
     name: sub.name,
     cityDisplay: sub.city_display,
     countryFlag: country?.flag ?? "🌍",
-    countryFlagUrl: flagUrl(country?.code),
-    countryName: sub.country,
-    opponentName: match.opponent_name,
+    countryFlagUrl: localFlagUrl(country?.code) ?? flagUrl(country?.code),
+    countryName: countryDisplayName(sub.country, locale),
+    opponentName: countryDisplayName(match.opponent_name, locale),
     bihScore: sub.bih_score,
     opponentScore: sub.opponent_score,
     pulsValue: sub.puls_value,
-    pulsLabel: sub.puls_label,
+    pulsLabel: pulsLabel(sub.puls_value, locale),
   };
 
   const fileName = `bih-puls-card-${sub.name.toLowerCase().replace(/\s+/g, "-")}.png`;
@@ -98,7 +102,7 @@ function CardPage() {
       link.href = dataUrl;
       link.click();
     } catch {
-      toast.error("Greška pri preuzimanju. Pokušaj ponovo.");
+      toast.error(t("card.downloadError"));
     } finally {
       setBusy("none");
     }
@@ -122,7 +126,7 @@ function CardPage() {
           text: "Moja BiH Puls Card 🐉 #DREAMBIG #DREAMBIH",
         });
       } else {
-        toast("Preuzmi kartu i objavi je na Instagram Story.");
+        toast(t("card.shareFallback"));
       }
     } catch {
       /* user cancelled share */
@@ -136,11 +140,11 @@ function CardPage() {
       <BrandHeader />
       <main className="mx-auto flex w-full max-w-md flex-col items-center gap-5 px-5 pb-16 pt-4">
         <Link to="/" className="flex w-full items-center gap-1 text-sm font-bold text-ice">
-          <ArrowLeft className="h-4 w-4" /> Početna
+          <ArrowLeft className="h-4 w-4" /> {t("common.home")}
         </Link>
 
         <h2 className="text-center font-display text-2xl uppercase tracking-wide text-primary">
-          ★ Tvoja Puls Card je spremna ★
+          {t("card.ready")}
         </h2>
 
         <div className="w-full max-w-[300px] overflow-visible">
@@ -153,7 +157,7 @@ function CardPage() {
           className="inline-flex w-full max-w-[340px] items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground gold-glow disabled:opacity-50"
         >
           <Download className="h-5 w-5" strokeWidth={3} />
-          {busy === "download" ? "Pripremam…" : "Download Card"}
+          {busy === "download" ? t("card.preparing") : t("card.download")}
         </button>
 
         <button
@@ -162,7 +166,7 @@ function CardPage() {
           className="inline-flex w-full max-w-[340px] items-center justify-center gap-2 rounded-full border-2 border-primary/70 bg-primary/10 px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary disabled:opacity-50"
         >
           <Share2 className="h-5 w-5" strokeWidth={2.5} />
-          {busy === "share" ? "Pripremam…" : "Podijeli na Instagram"}
+          {busy === "share" ? t("card.preparing") : t("card.shareInsta")}
         </button>
 
         <Link
@@ -170,7 +174,7 @@ function CardPage() {
           params={{ id: match.id }}
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ice underline underline-offset-4"
         >
-          <BarChart3 className="h-4 w-4" /> Pogledaj live rezultate
+          <BarChart3 className="h-4 w-4" /> {t("card.viewLive")}
         </Link>
 
         {/* hidden high-res render for export (1080x1920) */}

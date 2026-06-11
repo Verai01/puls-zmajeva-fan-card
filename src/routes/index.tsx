@@ -5,7 +5,7 @@ import type { Match } from "@/lib/queries";
 import {
   matchesQuery,
   submissionsQuery,
-  effectiveStatus,
+  getMatchAvailability,
   isOpponentConfigured,
 } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
@@ -13,9 +13,11 @@ import { BrandHeader } from "@/components/BrandHeader";
 import { PulsCard } from "@/components/PulsCard";
 import { MatchCard } from "@/components/MatchCard";
 import { ResultsDashboard } from "@/components/ResultsDashboard";
-import { CircularBosniaFlag } from "@/components/CircularFlag";
+import { BosniaRoundFlag, localFlagUrl } from "@/components/RoundFlag";
 import { useSubmittedMatches, useUserProfile } from "@/lib/device";
-import { flagUrl } from "@/lib/data/countries";
+import { countryDisplayName } from "@/lib/data/countries";
+import { pulsLabel } from "@/lib/puls";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,9 +46,7 @@ function pickLiveMatch(
   matches: Match[],
   submitted: Record<string, string>,
 ): Match | undefined {
-  const open = matches.filter(
-    (m) => isOpponentConfigured(m) && effectiveStatus(m) === "open",
-  );
+  const open = matches.filter((m) => getMatchAvailability(m).canPredict);
   const remaining = open.filter((m) => !submitted[m.id]);
   return remaining[0] ?? open[0] ?? matches.find((m) => isOpponentConfigured(m));
 }
@@ -56,10 +56,9 @@ function Index() {
   const navigate = useNavigate();
   const submitted = useSubmittedMatches();
   const profile = useUserProfile();
+  const { t, locale } = useI18n();
 
-  const tippable = matches.filter(
-    (m) => isOpponentConfigured(m) && effectiveStatus(m) === "open",
-  );
+  const tippable = matches.filter((m) => getMatchAvailability(m).canPredict);
   const remaining = tippable.filter((m) => !submitted[m.id]);
   const hasProfile = !!profile;
 
@@ -78,7 +77,11 @@ function Index() {
   };
 
   const handlePrimaryCta = () => {
-    if (hasProfile && remaining.length === 0) {
+    if (!hasProfile) {
+      navigate({ to: "/start" });
+      return;
+    }
+    if (remaining.length === 0) {
       scrollToLiveResults();
       return;
     }
@@ -86,11 +89,9 @@ function Index() {
     if (target) navigate({ to: "/match/$id", params: { id: target.id } });
   };
 
-  let ctaLabel = "Kreiraj svoju BiH Puls Card";
-  if (hasProfile && remaining.length > 0) ctaLabel = "Nastavi tipovati";
-  if (hasProfile && remaining.length === 0) ctaLabel = "Pogledaj rezultate";
-
-  const ctaDisabled = !hasProfile && remaining.length === 0;
+  let ctaLabel = t("landing.ctaCreate");
+  if (hasProfile && remaining.length > 0) ctaLabel = t("landing.ctaContinue");
+  if (hasProfile && remaining.length === 0) ctaLabel = t("landing.ctaViewResults");
 
   return (
     <AppShell>
@@ -99,22 +100,21 @@ function Index() {
       <main className="flex flex-col gap-8 px-5 pb-16 pt-6">
         {/* Hero */}
         <section className="text-center">
-          <CircularBosniaFlag size="md" className="mx-auto shadow-[0_3px_10px_oklch(0_0_0_/_45%)]" />
+          <BosniaRoundFlag size="md" className="mx-auto shadow-[0_3px_10px_oklch(0_0_0_/_45%)]" />
           <h1 className="mt-4 font-display text-6xl leading-[0.9] text-foreground text-stroke-royal">
             PULS<br />
             <span className="text-primary">ZMAJEVA</span>
           </h1>
           <p className="mt-3 text-sm font-bold uppercase tracking-[0.2em] text-ice">
-            ━ Kako dišu navijači BiH? ━
+            {t("landing.tagline")}
           </p>
           <p className="mx-auto mt-4 max-w-xs text-base text-foreground/85">
-            Unesi svoj puls, tipuj rezultat i budi dio najveće navijačke zajednice{" "}
-            <span className="font-bold text-primary">na svijetu.</span>
+            {t("landing.heroLead")}{" "}
+            <span className="font-bold text-primary">{t("landing.heroLeadStrong")}</span>
           </p>
 
           <button
             onClick={handlePrimaryCta}
-            disabled={ctaDisabled}
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground gold-glow active:scale-[0.98] disabled:opacity-50"
           >
             {ctaLabel}
@@ -122,24 +122,24 @@ function Index() {
           </button>
 
           {hasProfile && remaining.length > 0 && (
-            <p className="mt-2 text-sm font-semibold text-ice">Tipuj preostale utakmice</p>
+            <p className="mt-2 text-sm font-semibold text-ice">
+              {t("landing.continueHint")}
+            </p>
           )}
 
           <Link
             to="/leaderboard"
             className="mt-3 inline-flex items-center justify-center gap-1.5 text-sm font-bold text-ice underline underline-offset-4"
           >
-            <BarChart3 className="h-4 w-4" /> Pogledaj rezultate
+            <BarChart3 className="h-4 w-4" /> {t("landing.ctaViewResults")}
           </Link>
         </section>
 
         {/* Sample card showpiece with handwritten annotations */}
         <section className="relative mx-auto w-full max-w-[300px] pt-6">
           <div className="pointer-events-none absolute -left-1 top-10 z-20 -rotate-6 text-left">
-            <p className="font-hand text-2xl font-bold leading-[0.95] text-ice drop-shadow">
-              Tvoj puls
-              <br />
-              tvoja priča
+            <p className="whitespace-pre-line font-hand text-2xl font-bold leading-[0.95] text-ice drop-shadow">
+              {t("landing.annLeft")}
             </p>
             <svg viewBox="0 0 60 30" className="mt-1 h-5 w-14 text-ice/80">
               <path
@@ -160,10 +160,8 @@ function Index() {
           </div>
 
           <div className="pointer-events-none absolute -right-1 top-1/2 z-20 rotate-6 text-right">
-            <p className="font-hand text-2xl font-bold leading-[0.95] text-primary drop-shadow">
-              Podijeli i
-              <br />
-              podrži Zmajeve!
+            <p className="whitespace-pre-line font-hand text-2xl font-bold leading-[0.95] text-primary drop-shadow">
+              {t("landing.annRight")}
             </p>
             <svg viewBox="0 0 60 30" className="ml-auto mt-1 h-5 w-14 text-primary/80">
               <path
@@ -189,13 +187,13 @@ function Index() {
                 name: "AMIR",
                 cityDisplay: "Malmö",
                 countryFlag: "🇸🇪",
-                countryFlagUrl: flagUrl("SE"),
-                countryName: "Švedska",
-                opponentName: "Švicarska",
+                countryFlagUrl: localFlagUrl("SE"),
+                countryName: countryDisplayName("Švedska", locale),
+                opponentName: countryDisplayName("Švicarska", locale),
                 bihScore: 2,
                 opponentScore: 1,
                 pulsValue: 88,
-                pulsLabel: "Već slavimo",
+                pulsLabel: pulsLabel(88, locale),
               }}
             />
           </div>
@@ -204,7 +202,7 @@ function Index() {
         {/* Matches */}
         <section>
           <h2 className="mb-3 text-center font-display text-2xl uppercase tracking-wide text-primary">
-            ★ Aktuelno ★
+            {t("landing.sectionActual")}
           </h2>
           <div className="flex flex-col gap-3">
             {matches.map((m) => (
@@ -222,10 +220,10 @@ function Index() {
         {liveMatch && (
           <section id="live-results" className="flex flex-col gap-4">
             <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
-              Live rezultati
+              {t("landing.liveResults")}
             </h2>
             <p className="text-sm text-muted-foreground">
-              BiH vs {liveMatch.opponent_name}
+              BiH vs {countryDisplayName(liveMatch.opponent_name, locale)}
             </p>
             <ResultsDashboard match={liveMatch} submissions={liveSubmissions} />
           </section>
@@ -240,7 +238,7 @@ function Index() {
         >
           <span className="flex items-center gap-3 font-bold uppercase tracking-wide text-foreground">
             <Instagram className="h-5 w-5 text-primary" />
-            Prati nas na Instagramu
+            {t("landing.instagram")}
           </span>
           <ArrowRight className="h-5 w-5 text-primary" />
         </a>

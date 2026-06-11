@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Minus, Plus } from "lucide-react";
-import { CircularBosniaFlag, CircularFlag } from "@/components/CircularFlag";
+import { BosniaRoundFlag, RoundFlag } from "@/components/RoundFlag";
 
 interface ScoreboardProps {
   opponentName: string;
@@ -8,6 +8,8 @@ interface ScoreboardProps {
   bihScore: number;
   opponentScore: number;
   onChange: (side: "bih" | "opponent", value: number) => void;
+  /** Disable steppers when prediction is closed. */
+  disabled?: boolean;
 }
 
 function Stepper({
@@ -15,11 +17,13 @@ function Stepper({
   flagNode,
   value,
   onChange,
+  disabled = false,
 }: {
   label: string;
   flagNode: ReactNode;
   value: number;
   onChange: (value: number) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-3">
@@ -36,17 +40,19 @@ function Stepper({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          aria-label={`Smanji ${label}`}
+          disabled={disabled}
+          aria-label={`- ${label}`}
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-secondary text-foreground active:scale-95"
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-secondary text-foreground active:scale-95 disabled:opacity-40"
         >
           <Minus className="h-4 w-4" strokeWidth={3} />
         </button>
         <button
           type="button"
-          aria-label={`Povećaj ${label}`}
+          disabled={disabled}
+          aria-label={`+ ${label}`}
           onClick={() => onChange(Math.min(30, value + 1))}
-          className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground active:scale-95"
+          className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground active:scale-95 disabled:opacity-40"
         >
           <Plus className="h-4 w-4" strokeWidth={3} />
         </button>
@@ -61,23 +67,26 @@ export function Scoreboard({
   bihScore,
   opponentScore,
   onChange,
+  disabled = false,
 }: ScoreboardProps) {
   return (
     <div className="glass-card flex items-start gap-2 rounded-2xl px-4 py-6">
       <Stepper
         label="BiH"
-        flagNode={<CircularBosniaFlag size="sm" />}
+        flagNode={<BosniaRoundFlag size="sm" />}
         value={bihScore}
         onChange={(v) => onChange("bih", v)}
+        disabled={disabled}
       />
       <div className="self-center pt-2 font-display text-4xl text-foreground/60">:</div>
       <Stepper
         label={opponentName}
         flagNode={
-          <CircularFlag code={opponentCode} size="sm" alt={opponentName} emoji="⚽" />
+          <RoundFlag code={opponentCode} size="sm" alt={opponentName} emoji="⚽" />
         }
         value={opponentScore}
         onChange={(v) => onChange("opponent", v)}
+        disabled={disabled}
       />
     </div>
   );

@@ -1,5 +1,3 @@
-import type { EffectiveStatus } from "@/lib/queries";
-
 const sarajevoFmt = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Sarajevo",
   day: "2-digit",
@@ -22,24 +20,10 @@ export function formatKickoff(iso: string): string {
   return formatSarajevo(iso);
 }
 
-export function statusLabel(status: EffectiveStatus): string {
-  switch (status) {
-    case "open":
-      return "Otvoreno za tipovanje";
-    case "closed":
-      return "Glasanje zatvoreno";
-    case "finished":
-      return "Rezultat unesen";
-  }
-}
-
-export const VOTING_CLOSED_MESSAGE =
-  "Glasanje je zatvoreno. Rezultati su i dalje dostupni.";
-
-/** Secondary line under Sarajevo kickoff when `local_time_label` is set. */
-export function formatLocalTimeLine(
+/** Secondary line value under Sarajevo kickoff when `local_time_label` is set. */
+export function localTimeValue(
   localLabel: string | null | undefined,
 ): string | null {
   if (!localLabel?.trim()) return null;
-  return `Local time: ${localLabel.trim()}`;
+  return localLabel.trim();
 }

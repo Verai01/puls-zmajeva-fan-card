@@ -1,30 +1,31 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, ChevronRight } from "lucide-react";
 import type { Match } from "@/lib/queries";
-import { effectiveStatus, isOpponentConfigured } from "@/lib/queries";
-import { countryByName } from "@/lib/data/countries";
-import { formatSarajevo, formatLocalTimeLine } from "@/lib/format";
-import { CircularBosniaFlag, CircularFlag } from "@/components/CircularFlag";
+import { getMatchAvailability } from "@/lib/queries";
+import { countryByName, countryDisplayName } from "@/lib/data/countries";
+import { formatSarajevo, localTimeValue } from "@/lib/format";
+import { BosniaRoundFlag, RoundFlag } from "@/components/RoundFlag";
+import { useI18n } from "@/lib/i18n";
 
-type DisplayKey = "create" | "tip" | "submitted" | "closed" | "finished" | "upcoming";
+type DisplayKey = "create" | "tip" | "submitted" | "live" | "finished" | "upcoming";
 
 const chipStyles: Record<DisplayKey, string> = {
   create:
     "bg-primary text-primary-foreground border-primary shadow-[0_0_18px_oklch(0.84_0.17_90_/_45%)]",
   tip: "bg-primary text-primary-foreground border-primary shadow-[0_0_18px_oklch(0.84_0.17_90_/_45%)]",
   submitted: "bg-accent/25 text-ice border-accent/50",
-  closed: "bg-ice/15 text-ice border-ice/40",
+  live: "bg-ice/15 text-ice border-ice/40",
   finished: "bg-secondary/60 text-foreground/70 border-border",
   upcoming: "bg-foreground/10 text-foreground/60 border-foreground/20",
 };
 
-const chipLabels: Record<DisplayKey, string> = {
-  create: "Kreiraj Puls Card",
-  tip: "Tipuj utakmicu",
-  submitted: "Već tipovano",
-  closed: "Glasanje zatvoreno",
-  finished: "Rezultat unesen",
-  upcoming: "Uskoro",
+const chipLabelKey: Record<DisplayKey, Parameters<ReturnType<typeof useI18n>["t"]>[0]> = {
+  create: "status.create",
+  tip: "status.tip",
+  submitted: "status.submitted",
+  live: "status.live",
+  finished: "status.finished",
+  upcoming: "status.upcoming",
 };
 
 export function MatchCard({
@@ -36,16 +37,18 @@ export function MatchCard({
   submitted?: boolean;
   hasProfile?: boolean;
 }) {
-  const configured = isOpponentConfigured(match);
-  const status = effectiveStatus(match);
+  const { t, locale } = useI18n();
+  const { configured, phase, hasFinal, canPredict } = getMatchAvailability(match);
   const opp = countryByName(match.opponent_name);
-  const finished = status === "finished";
-  const localLine = formatLocalTimeLine(match.local_time_label);
+  const localLine = localTimeValue(match.local_time_label);
+  const opponentLabel = configured
+    ? countryDisplayName(match.opponent_name, locale)
+    : t("common.soon");
 
   let key: DisplayKey;
   if (!configured) key = "upcoming";
-  else if (finished) key = "finished";
-  else if (status === "closed") key = "closed";
+  else if (phase === "finished") key = "finished";
+  else if (phase === "live") key = "live";
   else if (submitted) key = "submitted";
   else key = hasProfile ? "tip" : "create";
 
@@ -59,25 +62,23 @@ export function MatchCard({
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="flex items-center gap-2 font-display text-2xl">
-            <CircularBosniaFlag size="sm" />
+            <BosniaRoundFlag size="sm" />
             <span className="text-foreground">BiH</span>
           </div>
           <span className="font-display text-sm text-muted-foreground">VS</span>
           <div className="flex min-w-0 items-center gap-2 font-display text-2xl">
             {configured && opp?.code ? (
-              <CircularFlag code={opp.code} size="sm" alt={match.opponent_name} />
+              <RoundFlag code={opp.code} size="sm" alt={opponentLabel} />
             ) : (
               <span className="shrink-0 text-xl">⏳</span>
             )}
-            <span className="truncate text-foreground">
-              {configured ? match.opponent_name : "Uskoro"}
-            </span>
+            <span className="truncate text-foreground">{opponentLabel}</span>
           </div>
         </div>
         <ChevronRight className="h-5 w-5 shrink-0 text-primary transition group-hover:translate-x-0.5" />
       </div>
 
-      {finished && (
+      {hasFinal && (
         <div className="mt-3 font-display text-3xl text-primary">
           {match.bih_final_score} : {match.opponent_final_score}
         </div>
@@ -90,18 +91,25 @@ export function MatchCard({
             {formatSarajevo(match.kickoff_time)}
           </span>
           <span className="mt-0.5 block pl-5 text-[11px] text-muted-foreground">
-            Sarajevo time
+            {t("common.sarajevoTime")}
           </span>
           {localLine && (
             <span className="mt-0.5 block pl-5 text-[10px] text-muted-foreground/80">
-              {localLine}
+              {t("common.localTime")}: {localLine}
             </span>
           )}
         </span>
-        <span
-          className={`shrink-0 self-center rounded-full border px-2.5 py-1 font-bold uppercase tracking-wide ${chipStyles[key]}`}
-        >
-          {chipLabels[key]}
+        <span className="flex shrink-0 flex-col items-end gap-1 self-center">
+          <span
+            className={`rounded-full border px-2.5 py-1 font-bold uppercase tracking-wide ${chipStyles[key]}`}
+          >
+            {t(chipLabelKey[key])}
+          </span>
+          {configured && !canPredict && phase !== "finished" && (
+            <span className="text-[10px] font-bold uppercase tracking-wide text-ice/70">
+              {t("status.predictionClosed")}
+            </span>
+          )}
         </span>
       </div>
     </Link>

@@ -1,21 +1,30 @@
+import type { Locale } from "@/lib/i18n";
+
 export interface PulsCategory {
   min: number;
   max: number;
   label: string;
+  labelEn: string;
 }
 
 export const PULS_CATEGORIES: PulsCategory[] = [
-  { min: 1, max: 20, label: "Slomljen, ali tu" },
-  { min: 21, max: 40, label: "Nervozni Zmaj" },
-  { min: 41, max: 60, label: "Realista" },
-  { min: 61, max: 80, label: "Vjernik" },
-  { min: 81, max: 100, label: "Već slavimo" },
+  { min: 1, max: 20, label: "Slomljen, ali tu", labelEn: "Broken, but here" },
+  { min: 21, max: 40, label: "Nervozni Zmaj", labelEn: "Nervous Dragon" },
+  { min: 41, max: 60, label: "Realista", labelEn: "Realist" },
+  { min: 61, max: 80, label: "Vjernik", labelEn: "Believer" },
+  { min: 81, max: 100, label: "Već slavimo", labelEn: "Already celebrating" },
 ];
 
-export function pulsLabel(value: number): string {
+/**
+ * Puls category label. Defaults to Bosnian — the Bosnian label is the canonical
+ * value stored in Supabase, so callers persisting to the DB must NOT pass a
+ * locale. Pass a locale only for display.
+ */
+export function pulsLabel(value: number, locale: Locale = "bs"): string {
   const v = Math.max(1, Math.min(100, Math.round(value)));
   const cat = PULS_CATEGORIES.find((c) => v >= c.min && v <= c.max);
-  return cat ? cat.label : "Realista";
+  if (!cat) return locale === "en" ? "Realist" : "Realista";
+  return locale === "en" ? cat.labelEn : cat.label;
 }
 
 /** Index 0-4 of the puls category, used for card atmosphere variations. */

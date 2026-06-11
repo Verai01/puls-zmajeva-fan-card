@@ -4,16 +4,15 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, BarChart3, IdCard } from "lucide-react";
 import {
   matchQuery,
-  effectiveStatus,
   createSubmission,
-  isOpponentConfigured,
+  getMatchAvailability,
 } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
 import { Scoreboard } from "@/components/Scoreboard";
 import { PulsSlider } from "@/components/PulsSlider";
 import { CityAutocomplete } from "@/components/CityAutocomplete";
-import { COUNTRIES, countryByName } from "@/lib/data/countries";
+import { COUNTRIES, countryByName, countryDisplayName } from "@/lib/data/countries";
 import { pulsLabel } from "@/lib/puls";
 import { normalizeCity } from "@/lib/normalize";
 import {
@@ -23,7 +22,7 @@ import {
   useSubmittedId,
   useUserProfile,
 } from "@/lib/device";
-import { VOTING_CLOSED_MESSAGE } from "@/lib/format";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/create/$matchId")({
@@ -68,6 +67,7 @@ function CreatePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const profile = useUserProfile();
+  const { t, locale } = useI18n();
   const hasProfile = !!profile;
   const alreadyId = useSubmittedId(matchId);
 
@@ -84,9 +84,12 @@ function CreatePage() {
 
   const country = countryByName(countryName);
   const matchOpponent = countryByName(match.opponent_name);
-  const label = pulsLabel(puls);
-  const configured = isOpponentConfigured(match);
-  const votingOpen = effectiveStatus(match) === "open";
+  const opponentLabel = countryDisplayName(match.opponent_name, locale);
+  // Stored label stays Bosnian (canonical); display uses the active locale.
+  const storedLabel = pulsLabel(puls);
+  const label = pulsLabel(puls, locale);
+  const { configured, canPredict } = getMatchAvailability(match);
+  const votingOpen = canPredict;
 
   useEffect(() => {
     if (profile?.puls_value) setPuls(profile.puls_value);
@@ -101,14 +104,14 @@ function CreatePage() {
         <BrandHeader />
         <div className="p-6 text-center">
           <p className="rounded-xl bg-[oklch(0.16_0.1_266)] px-4 py-4 text-ice">
-            Protivnik još nije potvrđen. Tipovanje će biti otvoreno uskoro.
+            {t("match.opponentTbd")}
           </p>
           <Link
             to="/match/$id"
             params={{ id: matchId }}
             className="mt-4 inline-block font-bold text-primary underline"
           >
-            Nazad na utakmicu
+            {t("create.backToMatch")}
           </Link>
         </div>
       </AppShell>
@@ -121,14 +124,14 @@ function CreatePage() {
         <BrandHeader />
         <div className="p-6 text-center">
           <p className="rounded-xl bg-[oklch(0.16_0.1_266)] px-4 py-4 text-ice">
-            {VOTING_CLOSED_MESSAGE}
+            {t("status.predictionClosed")}
           </p>
           <Link
             to="/match/$id"
             params={{ id: matchId }}
             className="mt-4 inline-block font-bold text-primary underline"
           >
-            Pogledaj rezultate
+            {t("common.viewResults")}
           </Link>
         </div>
       </AppShell>
@@ -140,14 +143,14 @@ function CreatePage() {
       <AppShell>
         <BrandHeader />
         <div className="p-6 text-center">
-          <p className="text-foreground">Već si tipovao ovu utakmicu.</p>
+          <p className="text-foreground">{t("match.alreadyPredicted")}</p>
           {profile?.cardSubmissionId && (
             <Link
               to="/card/$submissionId"
               params={{ submissionId: profile.cardSubmissionId }}
               className="mt-4 inline-block font-bold text-primary underline"
             >
-              Pogledaj svoju BiH Puls Card
+              {t("match.viewCard")}
             </Link>
           )}
           <Link
@@ -155,7 +158,7 @@ function CreatePage() {
             params={{ id: matchId }}
             className="mt-2 block font-bold text-ice underline"
           >
-            Pogledaj rezultate
+            {t("common.viewResults")}
           </Link>
         </div>
       </AppShell>
@@ -169,11 +172,10 @@ function CreatePage() {
         <BrandHeader />
         <main className="flex flex-col gap-5 px-5 pb-16 pt-8">
           <h2 className="text-center font-display text-2xl uppercase tracking-wide text-primary">
-            Tip je spremljen
+            {t("create.savedTitle")}
           </h2>
           <p className="text-center text-sm text-foreground/85">
-            Tvoj tip za {match.opponent_name} je zabilježen. Nastavi tipovati preostale
-            utakmice ili pogledaj rezultate.
+            {t("create.savedDesc")}
           </p>
           <Link
             to="/match/$id"
@@ -181,7 +183,7 @@ function CreatePage() {
             hash="live-results"
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary-foreground gold-glow"
           >
-            <BarChart3 className="h-5 w-5" /> Pogledaj rezultate
+            <BarChart3 className="h-5 w-5" /> {t("common.viewResults")}
           </Link>
           {cardSubmissionId && (
             <Link
@@ -189,11 +191,11 @@ function CreatePage() {
               params={{ submissionId: cardSubmissionId }}
               className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary/50 bg-primary/10 px-6 py-3 font-display text-sm uppercase tracking-wide text-primary"
             >
-              <IdCard className="h-5 w-5" /> Pogledaj svoju BiH Puls Card
+              <IdCard className="h-5 w-5" /> {t("match.viewCard")}
             </Link>
           )}
           <Link to="/" className="text-center text-sm font-bold text-ice underline">
-            Nazad na početnu
+            {t("create.backHome")}
           </Link>
         </main>
       </AppShell>
@@ -224,7 +226,7 @@ function CreatePage() {
         bih_score: bih,
         opponent_score: opp,
         puls_value: puls,
-        puls_label: label,
+        puls_label: storedLabel,
       });
 
       setSubmittedId(matchId, sub.id);
@@ -236,14 +238,14 @@ function CreatePage() {
           city_display: identity.city_display,
           city_normalized: identity.city_normalized,
           puls_value: puls,
-          puls_label: label,
+          puls_label: storedLabel,
           cardSubmissionId: sub.id,
         });
       } else {
         setUserProfile({
           ...profile!,
           puls_value: puls,
-          puls_label: label,
+          puls_label: storedLabel,
         });
       }
 
@@ -259,7 +261,7 @@ function CreatePage() {
         setSubmitting(false);
       }
     } catch {
-      toast.error("Greška pri slanju. Pokušaj ponovo.");
+      toast.error(t("create.toastError"));
       setSubmitting(false);
     }
   };
@@ -280,30 +282,30 @@ function CreatePage() {
           onClick={goBack}
           className="flex items-center gap-1 text-sm font-bold text-ice"
         >
-          <ArrowLeft className="h-4 w-4" /> Nazad
+          <ArrowLeft className="h-4 w-4" /> {t("common.back")}
         </button>
         <StepDots step={step} total={totalSteps} />
 
         {!hasProfile && step === 1 && (
           <section className="animate-rise flex flex-col gap-4">
             <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
-              Ko si i odakle navijaš?
+              {t("create.whoAreYou")}
             </h2>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wide text-foreground/70">
-                Ime / nadimak
+                {t("create.nameLabel")}
               </span>
               <input
                 value={name}
                 maxLength={40}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="npr. Amir"
+                placeholder={t("create.namePlaceholder")}
                 className="h-12 rounded-xl border border-input bg-[oklch(0.16_0.1_266)] px-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </label>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wide text-foreground/70">
-                Država
+                {t("create.countryLabel")}
               </span>
               <select
                 value={countryName}
@@ -313,17 +315,17 @@ function CreatePage() {
                 }}
                 className="h-12 rounded-xl border border-input bg-[oklch(0.16_0.1_266)] px-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Izaberi državu…</option>
+                <option value="">{t("create.countryPlaceholder")}</option>
                 {COUNTRIES.map((c) => (
                   <option key={c.code} value={c.name}>
-                    {c.flag} {c.name}
+                    {c.flag} {locale === "en" ? c.nameEn : c.name}
                   </option>
                 ))}
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wide text-foreground/70">
-                Grad
+                {t("create.cityLabel")}
               </span>
               <CityAutocomplete
                 countryCode={country?.code ?? null}
@@ -336,7 +338,7 @@ function CreatePage() {
               onClick={() => setStep(2)}
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary-foreground gold-glow disabled:opacity-40"
             >
-              Dalje <ArrowRight className="h-5 w-5" strokeWidth={3} />
+              {t("common.next")} <ArrowRight className="h-5 w-5" strokeWidth={3} />
             </button>
           </section>
         )}
@@ -344,17 +346,18 @@ function CreatePage() {
         {step === scoreStep && (
           <section className="animate-rise flex flex-col gap-4">
             <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
-              Tipuj rezultat
+              {t("create.predictScore")}
             </h2>
             {hasProfile && (
               <p className="text-sm text-foreground/80">
-                Tipuješ kao{" "}
+                {t("create.predictingAs")}{" "}
                 <span className="font-bold text-foreground">{profile!.name}</span> ·{" "}
-                {profile!.city_display}, {profile!.country}
+                {profile!.city_display},{" "}
+                {countryDisplayName(profile!.country, locale)}
               </p>
             )}
             <Scoreboard
-              opponentName={match.opponent_name}
+              opponentName={opponentLabel}
               opponentCode={matchOpponent?.code}
               bihScore={bih}
               opponentScore={opp}
@@ -364,7 +367,7 @@ function CreatePage() {
               onClick={() => setStep(pulsStep)}
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display text-base uppercase tracking-wide text-primary-foreground gold-glow"
             >
-              Dalje <ArrowRight className="h-5 w-5" strokeWidth={3} />
+              {t("common.next")} <ArrowRight className="h-5 w-5" strokeWidth={3} />
             </button>
           </section>
         )}
@@ -372,7 +375,7 @@ function CreatePage() {
         {step === pulsStep && (
           <section className="animate-rise flex flex-col gap-5">
             <h2 className="font-display text-2xl uppercase tracking-wide text-primary">
-              {hasProfile ? "Ažuriraj svoj puls" : "Kakav ti je puls?"}
+              {hasProfile ? t("create.updatePulse") : t("create.yourPulse")}
             </h2>
             <div className="glass-card rounded-2xl p-5">
               <div className="mb-5 text-center">
@@ -386,7 +389,9 @@ function CreatePage() {
               </div>
               <PulsSlider value={puls} onChange={setPuls} />
               <div className="mt-5 flex items-center justify-center gap-2">
-                <span className="text-sm text-foreground/70">Unesi broj:</span>
+                <span className="text-sm text-foreground/70">
+                  {t("create.enterNumber")}
+                </span>
                 <input
                   type="number"
                   min={1}
@@ -407,10 +412,10 @@ function CreatePage() {
             >
               <Check className="h-5 w-5" strokeWidth={3} />
               {submitting
-                ? "Šaljem…"
+                ? t("create.sending")
                 : hasProfile
-                  ? "Spremi tip"
-                  : "Napravi Puls Card"}
+                  ? t("create.savePrediction")
+                  : t("create.createCard")}
             </button>
           </section>
         )}

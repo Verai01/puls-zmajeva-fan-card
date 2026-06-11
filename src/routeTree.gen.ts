@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -16,6 +17,11 @@ import { Route as MatchIdRouteImport } from './routes/match.$id'
 import { Route as CreateMatchIdRouteImport } from './routes/create.$matchId'
 import { Route as CardSubmissionIdRouteImport } from './routes/card.$submissionId'
 
+const StartRoute = StartRouteImport.update({
+  id: '/start',
+  path: '/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/start': typeof StartRoute
   '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/start': typeof StartRoute
   '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/start': typeof StartRoute
   '/card/$submissionId': typeof CardSubmissionIdRoute
   '/create/$matchId': typeof CreateMatchIdRoute
   '/match/$id': typeof MatchIdRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/leaderboard'
     | '/sitemap.xml'
+    | '/start'
     | '/card/$submissionId'
     | '/create/$matchId'
     | '/match/$id'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/leaderboard'
     | '/sitemap.xml'
+    | '/start'
     | '/card/$submissionId'
     | '/create/$matchId'
     | '/match/$id'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/leaderboard'
     | '/sitemap.xml'
+    | '/start'
     | '/card/$submissionId'
     | '/create/$matchId'
     | '/match/$id'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LeaderboardRoute: typeof LeaderboardRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StartRoute: typeof StartRoute
   CardSubmissionIdRoute: typeof CardSubmissionIdRoute
   CreateMatchIdRoute: typeof CreateMatchIdRoute
   MatchIdRoute: typeof MatchIdRoute
@@ -110,6 +123,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/start': {
+      id: '/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof StartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LeaderboardRoute: LeaderboardRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StartRoute: StartRoute,
   CardSubmissionIdRoute: CardSubmissionIdRoute,
   CreateMatchIdRoute: CreateMatchIdRoute,
   MatchIdRoute: MatchIdRoute,

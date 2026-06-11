@@ -6,8 +6,9 @@ import {
   topCities,
 } from "@/lib/stats";
 import { pulsLabel } from "@/lib/puls";
-import { countryByName } from "@/lib/data/countries";
-import { CircularFlag } from "@/components/CircularFlag";
+import { countryByName, countryDisplayName } from "@/lib/data/countries";
+import { RoundFlag } from "@/components/RoundFlag";
+import { useI18n } from "@/lib/i18n";
 
 function Section({
   title,
@@ -86,12 +87,15 @@ export function ResultsDashboard({
   match: Match;
   submissions: Submission[];
 }) {
+  const { t, locale } = useI18n();
   const total = submissions.length;
+  const votesWord = (n: number) =>
+    n === 1 ? t("results.voteOne") : t("results.voteMany");
 
   if (total === 0) {
     return (
       <div className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-        Još nema glasova za ovu utakmicu.
+        {t("results.noVotes")}
       </div>
     );
   }
@@ -107,7 +111,7 @@ export function ResultsDashboard({
 
   return (
     <div className="flex flex-col gap-4">
-      <Section title="Globalni Puls Zmajeva">
+      <Section title={t("results.globalPuls")}>
         <div className="flex items-end justify-between">
           <div>
             <div className="font-display text-6xl leading-none text-primary">
@@ -115,11 +119,11 @@ export function ResultsDashboard({
               <span className="text-2xl text-foreground/70">/100</span>
             </div>
             <div className="mt-1 font-display text-lg uppercase italic text-foreground">
-              {pulsLabel(avg)}
+              {pulsLabel(avg, locale)}
             </div>
           </div>
           <div className="text-right text-sm text-muted-foreground">
-            {total} {total === 1 ? "glas" : "glasova"}
+            {total} {votesWord(total)}
           </div>
         </div>
         <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-[oklch(0.16_0.1_266)]">
@@ -134,10 +138,11 @@ export function ResultsDashboard({
         </div>
       </Section>
 
-      <Section title="Puls po državama">
+      <Section title={t("results.byCountry")}>
         <Swiper count={byCountry.length}>
           {byCountry.map((c, i) => {
             const country = countryByName(c.name);
+            const display = countryDisplayName(c.name, locale);
             return (
               <div
                 key={c.name}
@@ -146,21 +151,21 @@ export function ResultsDashboard({
                 <div className="text-xs font-bold uppercase tracking-wide text-ice">
                   #{i + 1}
                 </div>
-                <CircularFlag
+                <RoundFlag
                   code={country?.code}
                   emoji="🌍"
                   size="lg"
-                  alt={c.name}
+                  alt={display}
                 />
                 <div className="font-display text-2xl uppercase text-foreground">
-                  {c.name}
+                  {display}
                 </div>
                 <div className="font-display text-5xl leading-none text-primary">
                   {c.avg}
                   <span className="text-xl text-foreground/70">/100</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {c.count} {c.count === 1 ? "glas" : "glasova"}
+                  {c.count} {votesWord(c.count)}
                 </div>
               </div>
             );
@@ -168,7 +173,7 @@ export function ResultsDashboard({
         </Swiper>
       </Section>
 
-      <Section title="Top gradovi">
+      <Section title={t("results.topCities")}>
         <Swiper count={citySlides.length}>
           {citySlides.map((slide, si) => (
             <div key={si} className="min-w-full snap-center">
@@ -176,6 +181,7 @@ export function ResultsDashboard({
                 {slide.map((c, idx) => {
                   const rank = si * 3 + idx + 1;
                   const country = countryByName(c.country);
+                  const countryLabel = countryDisplayName(c.country, locale);
                   return (
                     <div
                       key={`${c.city}-${rank}`}
@@ -189,13 +195,13 @@ export function ResultsDashboard({
                           {c.city}
                         </span>
                         <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                          <CircularFlag
+                          <RoundFlag
                             code={country?.code}
                             emoji="🌍"
                             size="xs"
-                            alt={c.country}
+                            alt={countryLabel}
                           />
-                          {c.country}
+                          {countryLabel}
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
@@ -203,7 +209,7 @@ export function ResultsDashboard({
                           {c.count}
                         </span>
                         <span className="ml-1 text-xs text-muted-foreground">
-                          {c.count === 1 ? "glas" : "glasova"}
+                          {votesWord(c.count)}
                         </span>
                       </span>
                     </div>
@@ -215,22 +221,22 @@ export function ResultsDashboard({
         </Swiper>
       </Section>
 
-      <Section title="Predikcija rezultata">
+      <Section title={t("results.distribution")}>
         <Bar
-          label="Pobjeda BiH"
+          label={t("results.bihWin")}
           value={`${dist.bihPct}%`}
           sub={`· ${dist.bih}`}
           pct={dist.bihPct}
         />
         <Bar
-          label="Neriješeno"
+          label={t("results.draw")}
           value={`${dist.drawPct}%`}
           sub={`· ${dist.draw}`}
           pct={dist.drawPct}
           color="var(--ice)"
         />
         <Bar
-          label={`Pobjeda · ${match.opponent_name}`}
+          label={`${t("results.oppWin")} · ${countryDisplayName(match.opponent_name, locale)}`}
           value={`${dist.opponentPct}%`}
           sub={`· ${dist.opponent}`}
           pct={dist.opponentPct}

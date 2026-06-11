@@ -1,41 +1,32 @@
 import { Link } from "@tanstack/react-router";
 import dragonLogo from "@/assets/dragon-logo.png";
-import { CircularBosniaFlag } from "@/components/CircularFlag";
+import { RoundFlag } from "@/components/RoundFlag";
+import { useI18n } from "@/lib/i18n";
 
-/**
- * Bosnia & Herzegovina flag SVG (used inside CircularBosniaFlag for clipping).
- */
-export function BosniaFlag({ className = "" }: { className?: string }) {
+/** Top-right language selector: US (English) left of BiH (Bosnian). */
+function LanguageSelector() {
+  const { locale, setLocale } = useI18n();
   return (
-    <svg
-      viewBox="0 0 200 100"
-      role="img"
-      aria-label="Zastava Bosne i Hercegovine"
-      className={className}
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <rect width="200" height="100" fill="#1b3fb5" />
-      <polygon points="100,0 200,0 200,100" fill="#ffd200" />
-      <g fill="#ffffff">
-        {Array.from({ length: 9 }).map((_, i) => {
-          const x = 96 + i * 12.5;
-          const y = -3 + i * 12.5;
-          const r = 5.2;
-          const pts = Array.from({ length: 5 })
-            .map((_, k) => {
-              const a = (Math.PI / 180) * (-90 + k * 72);
-              return `${(x + r * Math.cos(a)).toFixed(1)},${(y + r * Math.sin(a)).toFixed(1)}`;
-            })
-            .flatMap((p, k) => {
-              const a = (Math.PI / 180) * (-90 + k * 72 + 36);
-              const inner = `${(x + r * 0.42 * Math.cos(a)).toFixed(1)},${(y + r * 0.42 * Math.sin(a)).toFixed(1)}`;
-              return [p, inner];
-            })
-            .join(" ");
-          return <polygon key={i} points={pts} />;
-        })}
-      </g>
-    </svg>
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setLocale("en")}
+        aria-label="Switch to English"
+        aria-pressed={locale === "en"}
+        className="rounded-full transition active:scale-95"
+      >
+        <RoundFlag code="US" size="md" active={locale === "en"} alt="English" />
+      </button>
+      <button
+        type="button"
+        onClick={() => setLocale("bs")}
+        aria-label="Prebaci na bosanski"
+        aria-pressed={locale === "bs"}
+        className="rounded-full transition active:scale-95"
+      >
+        <RoundFlag code="BA" size="md" active={locale === "bs"} alt="Bosanski" />
+      </button>
+    </div>
   );
 }
 
@@ -59,7 +50,7 @@ export function BrandHeader() {
           </span>
         </span>
       </Link>
-      <CircularBosniaFlag size="md" />
+      <LanguageSelector />
     </header>
   );
 }

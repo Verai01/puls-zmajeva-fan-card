@@ -116,7 +116,12 @@ export const PulsCard = forwardRef<HTMLDivElement, PulsCardProps>(
                     src={data.countryFlagUrl}
                     alt={data.countryName}
                     crossOrigin="anonymous"
-                    className="absolute inset-0 h-full w-full scale-[1.35] object-cover"
+                    className={cn(
+                      "absolute inset-0 h-full w-full object-cover",
+                      // Local round SVGs already fill the circle; only rectangular
+                      // raster flags need zooming to avoid empty edges.
+                      data.countryFlagUrl.endsWith(".svg") ? "" : "scale-[1.35]",
+                    )}
                   />
                 ) : (
                   <span className="grid h-full w-full place-items-center font-display text-[7cqw] text-foreground">

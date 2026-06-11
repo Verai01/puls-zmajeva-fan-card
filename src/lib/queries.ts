@@ -6,26 +6,26 @@ import { countryByName } from "@/lib/data/countries";
 export type Match = Tables<"matches"> & { local_time_label?: string | null };
 export type Submission = Tables<"submissions">;
 
-export const VOTE_CUTOFF_MS = 5 * 60 * 1000; // 5 minutes before kickoff
 export const SUBMISSIONS_REFETCH_MS = 10_000;
 
 export type EffectiveStatus = "open" | "closed" | "finished";
 
-export function effectiveStatus(match: Match, now: number = Date.now()): EffectiveStatus {
-  if (
-    match.status === "finished" &&
-    match.bih_final_score !== null &&
-    match.opponent_final_score !== null
-  ) {
-    return "finished";
-  }
-  const cutoff = new Date(match.kickoff_time).getTime() - VOTE_CUTOFF_MS;
-  if (now >= cutoff) return "closed";
-  return "open";
-}
+/**
+ * Match phase used across the app:
+ *  - "open"     → kickoff is in the future, predictions allowed
+ *  - "live"     → kickoff has passed, no final score yet (running, closed)
+ *  - "finished" → final score entered (or match flagged finished)
+ */
+export type MatchPhase = "open" | "live" | "finished";
 
-export function isVotingOpen(match: Match, now: number = Date.now()): boolean {
-  return effectiveStatus(match, now) === "open";
+export interface MatchAvailability {
+  /** Opponent is a real configured team. */
+  configured: boolean;
+  /** Both final scores are present. */
+  hasFinal: boolean;
+  phase: MatchPhase;
+  /** Predictions allowed: configured + kickoff in the future + not final. */
+  canPredict: boolean;
 }
 
 /** True when the opponent is a real configured team (has a flag, not a placeholder). */
@@ -34,6 +34,45 @@ export function isOpponentConfigured(match: Match): boolean {
   if (!name) return false;
   if (/^protivnik/i.test(name)) return false;
   return !!countryByName(name);
+}
+
+/**
+ * Centralized match availability / status logic. Predictions are open ONLY
+ * while kickoff is strictly in the future — they close exactly at kickoff.
+ * A match is never "finished" just because kickoff passed; it needs a final
+ * score (or an explicit finished status).
+ */
+export function getMatchAvailability(
+  match: Match,
+  now: number = Date.now(),
+): MatchAvailability {
+  const configured = isOpponentConfigured(match);
+  const hasFinal =
+    match.bih_final_score !== null && match.opponent_final_score !== null;
+  const kickoff = new Date(match.kickoff_time).getTime();
+
+  let phase: MatchPhase;
+  if (hasFinal || match.status === "finished") {
+    phase = "finished";
+  } else if (kickoff > now) {
+    phase = "open";
+  } else {
+    phase = "live";
+  }
+
+  const canPredict = configured && phase === "open";
+  return { configured, hasFinal, phase, canPredict };
+}
+
+export function effectiveStatus(match: Match, now: number = Date.now()): EffectiveStatus {
+  const { phase } = getMatchAvailability(match, now);
+  if (phase === "finished") return "finished";
+  if (phase === "open") return "open";
+  return "closed";
+}
+
+export function isVotingOpen(match: Match, now: number = Date.now()): boolean {
+  return getMatchAvailability(match, now).canPredict;
 }
 
 async function fetchMatches(): Promise<Match[]> {

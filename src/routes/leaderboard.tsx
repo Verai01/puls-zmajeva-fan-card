@@ -5,8 +5,10 @@ import { ArrowLeft, Trophy } from "lucide-react";
 import { matchesQuery, submissionsQuery } from "@/lib/queries";
 import { AppShell } from "@/components/AppShell";
 import { BrandHeader } from "@/components/BrandHeader";
+import { RoundFlag } from "@/components/RoundFlag";
 import { buildLeaderboard } from "@/lib/stats";
-import { countryByName } from "@/lib/data/countries";
+import { countryByName, countryDisplayName } from "@/lib/data/countries";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/leaderboard")({
 
 function LeaderboardPage() {
   const { data: matches } = useSuspenseQuery(matchesQuery());
+  const { t, locale } = useI18n();
   const finished = matches.filter((m) => m.status === "finished");
   const [selected, setSelected] = useState(finished[0]?.id ?? "");
 
@@ -29,18 +32,16 @@ function LeaderboardPage() {
       <BrandHeader />
       <main className="flex flex-col gap-5 px-5 pb-16 pt-4">
         <Link to="/" className="flex items-center gap-1 text-sm font-bold text-ice">
-          <ArrowLeft className="h-4 w-4" /> Početna
+          <ArrowLeft className="h-4 w-4" /> {t("common.home")}
         </Link>
         <h1 className="text-center font-display text-4xl uppercase tracking-wide text-primary">
-          🏆 Tabela Zmajeva
+          {t("lb.title")}
         </h1>
-        <p className="text-center text-sm text-muted-foreground">
-          Tačan rezultat = 3 boda · Pogođen ishod = 1 bod · Promašaj = 0
-        </p>
+        <p className="text-center text-sm text-muted-foreground">{t("lb.scoring")}</p>
 
         {finished.length === 0 ? (
           <div className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-            Tabela se računa nakon što se unesu konačni rezultati utakmica.
+            {t("lb.empty")}
           </div>
         ) : (
           <>
@@ -55,7 +56,8 @@ function LeaderboardPage() {
                       : "border-border text-foreground/80"
                   }`}
                 >
-                  BiH–{m.opponent_name} {m.bih_final_score}:{m.opponent_final_score}
+                  BiH–{countryDisplayName(m.opponent_name, locale)} {m.bih_final_score}:
+                  {m.opponent_final_score}
                 </button>
               ))}
             </div>
@@ -70,13 +72,14 @@ function LeaderboardPage() {
 function Board({ matchId }: { matchId: string }) {
   const { data: matches } = useSuspenseQuery(matchesQuery());
   const { data: subs } = useSuspenseQuery(submissionsQuery(matchId));
+  const { t, locale } = useI18n();
   const match = matches.find((m) => m.id === matchId)!;
   const board = buildLeaderboard(match, subs) ?? [];
 
   if (board.length === 0) {
     return (
       <div className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-        Nema tipova za ovu utakmicu.
+        {t("lb.noTips")}
       </div>
     );
   }
@@ -99,8 +102,14 @@ function Board({ matchId }: { matchId: string }) {
             <span className="max-w-full truncate font-display text-base uppercase text-foreground">
               {e.name}
             </span>
-            <span className="text-[11px] text-muted-foreground">
-              {countryByName(e.country)?.flag} {e.bih_score}:{e.opponent_score}
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <RoundFlag
+                code={countryByName(e.country)?.code}
+                emoji="🌍"
+                size="xs"
+                alt={countryDisplayName(e.country, locale)}
+              />
+              {e.bih_score}:{e.opponent_score}
             </span>
             <span className="font-display text-2xl text-primary">{e.points}</span>
           </div>
@@ -119,8 +128,14 @@ function Board({ matchId }: { matchId: string }) {
                   {i + 4}
                 </span>
                 <span className="font-semibold text-foreground">{e.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {countryByName(e.country)?.flag} {e.bih_score}:{e.opponent_score}
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <RoundFlag
+                    code={countryByName(e.country)?.code}
+                    emoji="🌍"
+                    size="xs"
+                    alt={countryDisplayName(e.country, locale)}
+                  />
+                  {e.bih_score}:{e.opponent_score}
                 </span>
               </span>
               <span className="flex items-center gap-1 font-display text-lg text-primary">
