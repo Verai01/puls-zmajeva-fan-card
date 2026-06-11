@@ -15,8 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 // Canonical site origin used for absolute Open Graph / Twitter URLs.
-// Change this to the custom domain (e.g. https://pulszmajeva.com) once it's live.
-const SITE_URL = "https://puls-zmajeva-fan-card.vercel.app";
+const SITE_URL = "https://pulszmajeva.com";
 
 function NotFoundComponent() {
   return (
